@@ -1,0 +1,107 @@
+@import "tailwindcss";
+@import "@fontsource-variable/manrope";
+@import "@fontsource/dm-serif-display";
+
+/* Light: minimal. Dark: moody. Both themes carry the same token names, so a
+   component never needs to know which one is active.
+
+   The dark block is written twice on purpose: once for devices set to dark that
+   have no saved choice, once for an explicit choice. A saved choice always wins
+   over the device setting. */
+:root {
+  --bg: #f7f4ee;
+  --surface: #ffffff;
+  --ink: #1f1a16;
+  --ink-soft: #6a5f55;
+  --accent: #b4531f;
+  --accent-ink: #ffffff;
+  --line: #e4ded3;
+  /* Light stays flat; dark paints a warm glow over the top corners. */
+  --glow: none;
+  --photo-dim: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14100d;
+    --surface: #1e1814;
+    --ink: #f2e9dc;
+    --ink-soft: #b3a594;
+    --accent: #f2a33a;
+    --accent-ink: #14100d;
+    --line: #33291f;
+    --glow:
+      radial-gradient(80vw 60vh at 85% -10%, rgb(242 163 58 / 0.14), transparent 70%),
+      radial-gradient(70vw 50vh at 0% 0%, rgb(180 83 31 / 0.12), transparent 70%);
+    --photo-dim: 0.78;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #14100d;
+  --surface: #1e1814;
+  --ink: #f2e9dc;
+  --ink-soft: #b3a594;
+  --accent: #f2a33a;
+  --accent-ink: #14100d;
+  --line: #33291f;
+  --glow:
+    radial-gradient(80vw 60vh at 85% -10%, rgb(242 163 58 / 0.14), transparent 70%),
+    radial-gradient(70vw 50vh at 0% 0%, rgb(180 83 31 / 0.12), transparent 70%);
+  --photo-dim: 0.78;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-line: var(--line);
+  --font-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "DM Serif Display", ui-serif, Georgia, serif;
+}
+
+html, body, #root { height: 100%; }
+/* Keep the scrollbar's space reserved, so a shorter filtered list cannot shift
+   the layout sideways. */
+html { scrollbar-gutter: stable; }
+body {
+  background-color: var(--bg);
+  background-image: var(--glow);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* DM Serif Display ships a single weight (400). Asking for a bolder one makes
+   the browser smear a synthetic bold, so pin the weight and refuse synthesis:
+   headings get their emphasis from size, not weight. */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-synthesis-weight: none;
+  letter-spacing: -0.015em;
+}
+
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+/* Drops the browser's own arrow, which sat flush against the edge, and leaves
+   room for the chevron that <Select> overlays. */
+.field-select {
+  appearance: none;
+  padding-right: 2.75rem;
+}
+
+@keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+/* Keyed on the active filter, so the list cross-fades instead of snapping. */
+.animate-fade-in { animation: fade-in 180ms ease-out; }
+
+@keyframes slide-up { from { transform: translateY(100%); } to { transform: none; } }
+.animate-slide-up { animation: slide-up 220ms cubic-bezier(0.22, 1, 0.36, 1); }
