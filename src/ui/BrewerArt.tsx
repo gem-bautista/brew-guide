@@ -16,13 +16,17 @@ const PHOTOS: Partial<Record<Brewer, { src: string; alt: string }>> = {
   },
 }
 
-/** Flat-bottom brewers read wrong as a cone, so they get their own outline. */
-const FLAT_BOTTOM: ReadonlySet<Brewer> = new Set<Brewer>(['Kalita Wave', 'Orea'])
+export function brewerPhoto(brewer: Brewer) {
+  return PHOTOS[brewer]
+}
 
-function Mark({ brewer }: { brewer: Brewer }) {
+/** Flat-bottom brewers read wrong as a cone, so they get their own outline. */
+export const FLAT_BOTTOM: ReadonlySet<Brewer> = new Set<Brewer>(['Kalita Wave', 'Orea'])
+
+export function Mark({ brewer, size = 40 }: { brewer: Brewer; size?: number }) {
   const flat = FLAT_BOTTOM.has(brewer)
   return (
-    <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 48 48" width={size} height={size} aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       {flat ? (
         <path d="M11 13h26l-3 16a4 4 0 0 1-4 3.4H18a4 4 0 0 1-4-3.4L11 13Z" />
       ) : (
