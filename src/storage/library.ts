@@ -13,11 +13,13 @@ function read(key: string): unknown {
   }
 }
 
-function write(key: string, value: unknown): void {
+/** False when the browser refused the write: storage is full (photos fill it fastest) or unavailable. */
+function write(key: string, value: unknown): boolean {
   try {
     localStorage.setItem(key, JSON.stringify(value))
+    return true
   } catch {
-    /* storage unavailable: changes last until the page closes */
+    return false
   }
 }
 
@@ -40,6 +42,7 @@ export function loadPersonalRecipes(): Recipe[] {
   })
 }
 
-export function savePersonalRecipes(recipes: readonly Recipe[]): void {
-  write(PERSONAL_KEY, recipes)
+/** Returns false if the recipes could not be saved; they then last only until the page closes. */
+export function savePersonalRecipes(recipes: readonly Recipe[]): boolean {
+  return write(PERSONAL_KEY, recipes)
 }

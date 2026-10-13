@@ -29,6 +29,13 @@ export const RecipeSchema = z
     /** How well the numbers are backed: author or official page, partial (secondary host or fragmentary), or supplied by the user. */
     verification: z.enum(['verified', 'partial', 'user-supplied']).optional(),
     brewer: z.enum(BREWERS),
+    /**
+     * A built-in's bundled photo (`photos/recipes/<id>.jpg`) or a photo the
+     * user added, stored inline as a JPEG data URL. Nothing else is accepted,
+     * so an imported backup cannot make the app load an image from elsewhere.
+     */
+    photo: z.string().regex(/^(photos\/recipes\/[a-z0-9-]+\.jpg|data:image\/jpeg;base64,[A-Za-z0-9+/=]+)$/).optional(),
+    photoAlt: z.string().optional(),
     doseG: z.number().positive(),
     tempC: z.number().min(60).max(100),
     grind: z.object({

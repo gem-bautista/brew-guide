@@ -1,25 +1,5 @@
 import type { Brewer } from '../domain/schema'
 
-/**
- * Photographs exist for the two brewers the built-in recipes use. Every other
- * brewer falls back to a drawn mark on a tinted panel, which fills the same
- * slot and follows the theme, rather than a stand-in photo of the wrong gear.
- */
-const PHOTOS: Partial<Record<Brewer, { src: string; alt: string }>> = {
-  V60: {
-    src: 'photos/brewer-v60.jpg',
-    alt: 'A gooseneck kettle pouring into a Hario V60 on a scale',
-  },
-  Aeropress: {
-    src: 'photos/brewer-aeropress.jpg',
-    alt: 'An AeroPress being pressed into a glass carafe',
-  },
-}
-
-export function brewerPhoto(brewer: Brewer) {
-  return PHOTOS[brewer]
-}
-
 /** Flat-bottom brewers read wrong as a cone, so they get their own outline. */
 export const FLAT_BOTTOM: ReadonlySet<Brewer> = new Set<Brewer>(['Kalita Wave', 'Orea'])
 
@@ -36,33 +16,5 @@ export function Mark({ brewer, size = 40 }: { brewer: Brewer; size?: number }) {
       <path d="M24 36v5" />
       <path d="M17 41h14" />
     </svg>
-  )
-}
-
-/**
- * Fills the card's left edge, top to bottom. The caller sets the width; this
- * stretches to whatever height the card's text column ends up being.
- */
-export function BrewerArt({ brewer, className = '' }: { brewer: Brewer; className?: string }) {
-  const photo = PHOTOS[brewer]
-  if (photo) {
-    return (
-      <img
-        src={photo.src}
-        alt={photo.alt}
-        loading="lazy"
-        decoding="async"
-        className={`block h-auto self-stretch bg-line object-cover brightness-[var(--photo-dim)] ${className}`}
-      />
-    )
-  }
-  return (
-    <div
-      role="img"
-      aria-label={brewer}
-      className={`grid shrink-0 self-stretch place-items-center bg-line/60 text-ink-soft ${className}`}
-    >
-      <Mark brewer={brewer} />
-    </div>
   )
 }

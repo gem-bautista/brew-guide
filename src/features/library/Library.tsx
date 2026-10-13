@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import type { Recipe } from '../../domain/schema'
-import { totalWater } from '../../domain/cumulative'
 import { DEFAULT_QUERY, isFiltered, queryRecipes, type LibraryQuery, type SourceFilter } from '../../domain/library'
 import { hrefFor } from '../../router'
 import { formatClock } from '../../domain/clock'
 import type { ThemeChoice } from '../../storage/theme'
 import type { StoredSession } from '../../storage/activeSession'
-import { BrewerArt } from '../../ui/BrewerArt'
+import { RecipePhoto } from '../../ui/RecipePhoto'
+import { Rule, Sparkle } from '../../ui/Ornaments'
 import { FilterSheet, activeFilterCount } from './FilterSheet'
 import { SettingsSheet } from './SettingsSheet'
 
@@ -14,23 +14,21 @@ const SOURCES: { value: SourceFilter; label: string }[] = [
   { value: 'all', label: 'All' }, { value: 'favorites', label: 'Favorites' }, { value: 'mine', label: 'Mine' },
 ]
 
-function Star({ on, name, onToggle }: { on: boolean; name: string; onToggle: () => void }) {
+export function Star({ on, className = '' }: { on: boolean; className?: string }) {
   return (
-    <button
-      aria-pressed={on}
-      aria-label={on ? `Remove ${name} from favorites` : `Add ${name} to favorites`}
-      onClick={onToggle}
-      className="grid h-14 w-14 shrink-0 place-items-center rounded-full text-accent"
-    >
-      <svg viewBox="0 0 24 24" width="26" height="26" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
-        <path d="m12 3.2 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z" />
-      </svg>
-    </button>
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden className={className} fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+      <path d="m12 3.2 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z" />
+    </svg>
   )
 }
 
-function Chip({ children }: { children: React.ReactNode }) {
-  return <span className="rounded-full border border-line px-2.5 py-1 text-sm tabular-nums text-ink-soft">{children}</span>
+/** The wordmark: thin Montserrat with an orange full stop. */
+export function Wordmark({ className = 'text-[21px]' }: { className?: string }) {
+  return (
+    <span className={`font-figure tracking-[-0.03em] ${className}`}>
+      Brew Guide<span aria-hidden className="ml-[3px] inline-block h-1.5 w-1.5 rounded-full bg-accent" />
+    </span>
+  )
 }
 
 function RecipeCard({ recipe, starred, onToggleFavorite }: {
@@ -39,20 +37,25 @@ function RecipeCard({ recipe, starred, onToggleFavorite }: {
   onToggleFavorite: () => void
 }) {
   return (
-    <li className="flex items-stretch overflow-hidden rounded-2xl border border-line bg-surface">
-      <BrewerArt brewer={recipe.brewer} className="w-[88px] sm:w-[108px]" />
-      <a href={hrefFor({ name: 'recipe', id: recipe.id })} className="min-w-0 flex-1 py-3 pl-4 pr-1">
-        <span className="font-display block text-xl leading-tight">{recipe.name}</span>
-        <span className="mt-1 block text-sm text-ink-soft">{recipe.author} · {recipe.brewer}</span>
-        <span className="mt-2 flex flex-wrap gap-1.5">
-          <Chip>{recipe.doseG} g</Chip>
-          <Chip>{totalWater(recipe)} g</Chip>
-          <Chip>{formatClock(recipe.totalSec)}</Chip>
+    <li className="relative">
+      {/* The orange corner bracket that frames each photo in the reference. */}
+      <span aria-hidden className="absolute -right-1.5 top-[8.75rem] h-16 w-8 rounded-br-2xl border-b-[1.5px] border-r-[1.5px] border-accent" />
+      <a href={hrefFor({ name: 'recipe', id: recipe.id })} className="relative block">
+        <RecipePhoto recipe={recipe} className="h-[200px] w-full rounded-2xl" />
+        <span className="mt-2.5 block font-heading text-[17px] leading-tight [text-wrap:balance]">{recipe.name}</span>
+        <span className="mt-0.5 block text-[13px] text-ink-soft">{recipe.author}</span>
+        <span className="font-figure mt-1.5 flex items-center gap-2 text-[13px]">
+          {recipe.doseG} g<Rule className="h-3.5" />{formatClock(recipe.totalSec)}
         </span>
       </a>
-      <div className="pr-1 pt-2">
-        <Star on={starred} name={recipe.name} onToggle={onToggleFavorite} />
-      </div>
+      <button
+        aria-pressed={starred}
+        aria-label={starred ? `Remove ${recipe.name} from favorites` : `Add ${recipe.name} to favorites`}
+        onClick={onToggleFavorite}
+        className="absolute right-2 top-2 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-accent"
+      >
+        <Star on={starred} />
+      </button>
     </li>
   )
 }
@@ -67,16 +70,13 @@ function Empty({ query }: { query: LibraryQuery }) {
         : 'No recipes match. Try fewer filters or a different search.'
   return (
     <div className="animate-fade-in grid place-items-center px-6 py-16 text-center">
-      <svg viewBox="0 0 48 48" width="56" height="56" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-ink-soft/60">
-        <path d="M9 13h30L25.8 31.6a2.2 2.2 0 0 1-3.6 0L9 13Z" />
-        <path d="M24 36v5M17 41h14" />
-      </svg>
+      <Sparkle size={28} className="text-accent" />
       <p className="mt-4 max-w-[28ch] text-lg text-ink-soft">{message}</p>
     </div>
   )
 }
 
-export function Library({ recipes, favorites, onToggleFavorite, onExport, onImport, theme, onThemeChange, resumable }: {
+export function Library({ recipes, favorites, onToggleFavorite, onExport, onImport, theme, onThemeChange, resumable, storageError }: {
   recipes: readonly Recipe[]
   favorites: ReadonlySet<string>
   onToggleFavorite: (id: string) => void
@@ -87,6 +87,8 @@ export function Library({ recipes, favorites, onToggleFavorite, onExport, onImpo
   onThemeChange: (choice: ThemeChoice) => void
   /** A brew left running, so the Library can offer to go back to it. */
   resumable: StoredSession | null
+  /** The browser refused to save the personal recipes, most likely because photos filled its storage. */
+  storageError: boolean
 }) {
   const [query, setQuery] = useState<LibraryQuery>(DEFAULT_QUERY)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -96,95 +98,109 @@ export function Library({ recipes, favorites, onToggleFavorite, onExport, onImpo
   const filterCount = activeFilterCount(query)
 
   return (
-    <div className="mx-auto max-w-2xl px-5 pb-28 pt-6">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-4xl leading-none">Brew Guide</h1>
-          <p className="mt-1.5 text-ink-soft">Your recipes, timed pour by pour.</p>
+    <div className="mx-auto max-w-2xl px-5 pb-32 pt-[18px]">
+      <header className="flex h-11 items-center justify-between">
+        <Wordmark />
+        <div className="flex gap-2">
+          <button
+            onClick={() => setFiltersOpen(true)}
+            className="flex h-11 items-center gap-2 rounded-sm border border-ink px-3.5 text-sm font-medium"
+          >
+            Filters
+            {filterCount > 0 && (
+              <span className="font-figure grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-xs font-medium text-ink">{filterCount}</span>
+            )}
+          </button>
+          <button
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Settings"
+            className="grid h-11 w-11 place-items-center rounded bg-ink text-bg"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M4 7h10M18 7h2M4 17h2M10 17h10" />
+              <circle cx="16" cy="7" r="2" />
+              <circle cx="8" cy="17" r="2" />
+            </svg>
+          </button>
         </div>
-        <button
-          onClick={() => setSettingsOpen(true)}
-          aria-label="Settings"
-          className="grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 border-line bg-surface"
-        >
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="3.2" />
-            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
-          </svg>
-        </button>
       </header>
+
+      <div role="group" aria-label="Show" className="mt-1 flex items-center gap-3">
+        {SOURCES.map((s, i) => (
+          <Fragment key={s.value}>
+            {i > 0 && <span aria-hidden className="text-ink-soft/60">/</span>}
+            <button
+              aria-pressed={query.source === s.value}
+              onClick={() => set({ source: s.value })}
+              className={`h-11 ${query.source === s.value ? 'font-bold text-ink' : 'font-medium text-ink-soft'}`}
+            >
+              {s.label}
+            </button>
+          </Fragment>
+        ))}
+      </div>
+
+      {storageError && (
+        <p role="alert" className="mt-3 rounded-2xl bg-accent-tint px-4 py-3 text-[15px]">
+          Your latest change could not be saved because this browser&rsquo;s storage is full. Remove a photo from one of your recipes, or save a backup from Settings.
+        </p>
+      )}
+
+      <section className="relative mt-1.5 text-center">
+        <Sparkle size={24} className="absolute left-0.5 top-0 text-ink" />
+        <h1 className="font-display pt-[30px] text-[clamp(64px,21vw,96px)] leading-none">
+          Recipes<sup className="font-figure ml-1 align-[2.6em] text-lg font-normal tracking-normal text-accent-text">{recipes.length}</sup>
+        </h1>
+      </section>
 
       {resumable && (
         <a
           href={hrefFor({ name: 'recipe', id: resumable.recipe.id })}
-          className="mt-5 flex items-center gap-3 rounded-2xl border-2 border-accent bg-surface px-4 py-3"
+          className="mt-4 flex items-center gap-3 rounded-2xl bg-surface p-2 pr-4"
         >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent text-accent-ink">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden><path d="M8 5.5v13l11-6.5z" /></svg>
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px] bg-ink text-bg">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden><path d="M8 5.5v13l11-6.5z" /></svg>
           </span>
-          <span className="min-w-0">
-            <span className="block font-semibold">Brew in progress</span>
-            <span className="block truncate text-sm text-ink-soft">{resumable.recipe.name}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[13px] font-bold">Brew in progress</span>
+            <span className="block truncate font-heading text-[17px]">{resumable.recipe.name}</span>
           </span>
+          <span aria-hidden className="text-accent">→</span>
         </a>
       )}
 
-      <div className="mt-5 flex flex-col gap-3">
+      <label className="mt-3.5 flex h-[52px] items-center gap-2.5 rounded-[14px] bg-surface px-2">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-bg">
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="m16 16 4 4" />
+          </svg>
+        </span>
         <input
           type="search"
           aria-label="Search recipes"
           placeholder="Search by recipe, author or note"
           value={query.search}
           onChange={(e) => set({ search: e.target.value })}
-          className="h-14 rounded-2xl border-2 border-line bg-surface px-4 text-lg text-ink"
+          className="h-full min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-soft"
         />
-        <div className="flex gap-2">
-          <div role="group" aria-label="Show" className="flex flex-1 gap-2">
-            {SOURCES.map((s) => (
-              <button
-                key={s.value}
-                aria-pressed={query.source === s.value}
-                onClick={() => set({ source: s.value })}
-                className={`h-12 flex-1 rounded-xl text-base transition-colors ${
-                  query.source === s.value ? 'bg-accent font-semibold text-accent-ink' : 'border-2 border-line bg-surface'
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => setFiltersOpen(true)}
-            className="flex h-12 shrink-0 items-center gap-2 rounded-xl border-2 border-line bg-surface px-3.5 text-base"
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-              <path d="M3 6h18M6 12h12M10 18h4" />
-            </svg>
-            Filters
-            {filterCount > 0 && (
-              <span className="grid h-6 min-w-6 place-items-center rounded-full bg-accent px-1.5 text-sm font-semibold text-accent-ink">
-                {filterCount}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
+      </label>
 
-      <p className="mt-5 text-sm text-ink-soft" aria-live="polite">
+      <p className="mt-4 text-sm text-ink-soft" aria-live="polite">
         {shown.length} {shown.length === 1 ? 'recipe' : 'recipes'}
         {isFiltered(query) && (
-          <button className="ml-3 underline underline-offset-4" onClick={() => setQuery((q) => ({ ...DEFAULT_QUERY, sort: q.sort }))}>
+          <button className="ml-3 h-11 font-medium text-ink underline underline-offset-4" onClick={() => setQuery((q) => ({ ...DEFAULT_QUERY, sort: q.sort }))}>
             Clear filters
           </button>
         )}
       </p>
 
       {/* Reserving the height keeps a shorter filtered list from shifting the page. */}
-      <div className="mt-3 min-h-[60vh]">
+      <div className="mt-2 min-h-[60vh]">
         {shown.length === 0 ? (
           <Empty query={query} />
         ) : (
-          <ul key={`${query.source}-${filterCount}`} className="animate-fade-in flex flex-col gap-3">
+          <ul key={`${query.source}-${filterCount}`} className="animate-fade-in grid grid-cols-2 gap-x-3.5 gap-y-6 sm:grid-cols-3">
             {shown.map((r) => (
               <RecipeCard
                 key={r.id}
@@ -199,10 +215,10 @@ export function Library({ recipes, favorites, onToggleFavorite, onExport, onImpo
 
       <a
         href={hrefFor({ name: 'new' })}
-        className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-5 flex h-14 items-center gap-2 rounded-full bg-accent pl-4 pr-5 text-lg font-semibold text-accent-ink shadow-lg shadow-black/20"
+        className="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] right-5 flex h-[54px] items-center gap-2.5 rounded-sm bg-ink px-6 text-base font-bold text-bg shadow-[0_12px_30px_rgb(0_0_0/0.22)]"
       >
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
-          <path d="M12 5v14M5 12h14" />
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+          <path d="M12 4v16M4 12h16" />
         </svg>
         New recipe
       </a>
@@ -222,6 +238,7 @@ export function Library({ recipes, favorites, onToggleFavorite, onExport, onImpo
         onThemeChange={onThemeChange}
         onExport={onExport}
         onImport={onImport}
+        recipes={recipes}
       />
     </div>
   )

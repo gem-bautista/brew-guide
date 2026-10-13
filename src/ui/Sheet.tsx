@@ -63,30 +63,31 @@ export function Sheet({ open, title, onClose, children, footer }: {
         aria-label={`Close ${title}`}
         tabIndex={-1}
         onClick={onClose}
-        className="absolute inset-0 animate-fade-in bg-black/45"
+        className="absolute inset-0 animate-fade-in bg-black/50"
       />
       <div
         ref={panel}
         role="dialog"
         aria-modal="true"
         aria-labelledby={headingId}
-        className="animate-slide-up relative flex max-h-[85vh] flex-col rounded-t-3xl border-t-2 border-line bg-bg"
+        className="animate-slide-up relative mx-auto flex max-h-[90vh] w-full max-w-2xl flex-col rounded-t-[26px] bg-bg"
       >
-        <div className="flex items-center justify-between gap-4 px-5 pb-2 pt-4">
-          <h2 id={headingId} className="font-display text-2xl">{title}</h2>
+        <span aria-hidden className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-line" />
+        <div className="flex items-center justify-between gap-4 px-5 pb-2 pt-3">
+          <h2 id={headingId} className="font-heading text-3xl">{title}</h2>
           <button
             onClick={onClose}
             aria-label={`Close ${title}`}
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 border-line bg-surface"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded bg-ink text-bg"
           >
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-2">{children}</div>
         {footer && (
-          <div className="border-t border-line px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">{footer}</div>
+          <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">{footer}</div>
         )}
       </div>
     </div>

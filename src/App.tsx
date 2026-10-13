@@ -24,19 +24,20 @@ function downloadText(filename: string, text: string) {
 function NotFound() {
   return (
     <div className="mx-auto max-w-xl p-6">
-      <p className="font-display text-3xl font-normal">That recipe is not in your library.</p>
-      <a className="mt-4 inline-block underline underline-offset-4" href={hrefFor({ name: 'library' })}>Back to the Library</a>
+      <p className="font-heading text-3xl">That recipe is not in your library.</p>
+      <a className="mt-4 inline-block font-medium underline underline-offset-4" href={hrefFor({ name: 'library' })}>Back to the Library</a>
     </div>
   )
 }
 
-const actionClass = 'grid h-14 flex-1 place-items-center rounded-2xl border-2 border-line bg-surface text-lg font-semibold'
+const actionClass = 'grid h-12 flex-1 place-items-center rounded-sm border border-ink text-base font-bold'
 
 export function App() {
   const route = useRoute()
   const [favorites, setFavorites] = useState(loadFavorites)
   const [personal, setPersonal] = useState(loadPersonalRecipes)
   const [theme, setTheme] = useState(loadTheme)
+  const [storageError, setStorageError] = useState(false)
   const recipes = useMemo(() => [...BUILT_IN_RECIPES, ...personal], [personal])
 
   // Read on each visit to the Library, so the banner reflects a brew that was
@@ -51,7 +52,7 @@ export function App() {
   // Skip the first run so loading never rewrites storage (an entry that fails validation stays on disk until the user changes something).
   const loaded = useRef(false)
   useEffect(() => {
-    if (loaded.current) savePersonalRecipes(personal)
+    if (loaded.current) setStorageError(!savePersonalRecipes(personal))
     loaded.current = true
   }, [personal])
 
@@ -117,6 +118,7 @@ export function App() {
         key={recipe.id}
         recipe={recipe}
         backHref={library}
+        favorite={{ on: favorites.has(recipe.id), onToggle: () => toggleFavorite(recipe.id) }}
         extra={
           recipe.origin === 'personal' ? (
             <>
@@ -141,6 +143,7 @@ export function App() {
       theme={theme}
       onThemeChange={changeTheme}
       resumable={resumable}
+      storageError={storageError}
     />
   )
 }

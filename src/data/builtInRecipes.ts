@@ -1,7 +1,9 @@
 import { RecipeSchema, type Recipe } from '../domain/schema'
 
 type Raw = Record<string, unknown>
-const build = (r: Raw): Recipe => RecipeSchema.parse({ origin: 'built-in', scalable: true, ...r })
+/** Every built-in carries a portrait from its author's video or event, cropped to 4:5 in public/photos/recipes. */
+const build = (r: Raw): Recipe =>
+  RecipeSchema.parse({ origin: 'built-in', scalable: true, photo: `photos/recipes/${String(r.id)}.jpg`, ...r })
 const pour = (id: string, startSec: number, waterG: number, instruction: string, kind: 'pour' | 'bloom' = 'pour') =>
   ({ id, kind, startSec, waterG, instruction })
 const act = (id: string, kind: 'swirl' | 'stir' | 'wait' | 'press' | 'drawdown', startSec: number, instruction: string) =>
@@ -20,6 +22,7 @@ const WAC = 'https://worldaeropresschampionship.com/pages/recipes'
 export const BUILT_IN_RECIPES: Recipe[] = [
   build({
     id: 'kasuya-46-balanced',
+    photoAlt: 'Tetsu Kasuya pouring water into a V60',
     name: '4:6 Method',
     author: 'Tetsu Kasuya',
     family: '4:6 Method',
@@ -40,6 +43,7 @@ export const BUILT_IN_RECIPES: Recipe[] = [
   }),
   build({
     id: 'hoffmann-ultimate-v60',
+    photoAlt: 'James Hoffmann talking to camera at his desk',
     name: 'Ultimate V60 Technique',
     author: 'James Hoffmann',
     brewer: 'V60',
@@ -58,6 +62,7 @@ export const BUILT_IN_RECIPES: Recipe[] = [
   }),
   build({
     id: 'hoffmann-better-1-cup-v60',
+    photoAlt: 'A gooseneck kettle pouring into a plastic V60 on a glass server',
     name: 'A Better 1 Cup V60 Technique',
     author: 'James Hoffmann',
     brewer: 'V60',
@@ -79,6 +84,7 @@ export const BUILT_IN_RECIPES: Recipe[] = [
   }),
   build({
     id: 'hedrick-1-2-1-v60',
+    photoAlt: 'Lance Hedrick at his kitchen counter with a V60',
     name: '1-2-1 V60',
     author: 'Lance Hedrick',
     brewer: 'V60',
@@ -97,6 +103,7 @@ export const BUILT_IN_RECIPES: Recipe[] = [
   }),
   build({
     id: 'hedrick-one-and-done-v60',
+    photoAlt: 'Lance Hedrick pouring a kettle into a gold V60',
     name: 'One & Done V60',
     author: 'Lance Hedrick',
     brewer: 'V60',
@@ -115,6 +122,7 @@ export const BUILT_IN_RECIPES: Recipe[] = [
   }),
   build({
     id: 'hedrick-aeropress-1',
+    photoAlt: 'Two AeroPress chambers and a filter cap on a white counter',
     name: 'A Different AeroPress: dark or aged coffee',
     author: 'Lance Hedrick',
     family: 'A Different AeroPress',
@@ -132,6 +140,7 @@ export const BUILT_IN_RECIPES: Recipe[] = [
   }),
   build({
     id: 'hedrick-aeropress-2',
+    photoAlt: 'Lance Hedrick standing behind an AeroPress',
     name: 'A Different AeroPress: lighter coffee',
     author: 'Lance Hedrick',
     family: 'A Different AeroPress',
@@ -149,6 +158,7 @@ export const BUILT_IN_RECIPES: Recipe[] = [
   }),
   build({
     id: 'wac-2025-nemo-pop',
+    photoAlt: 'Nemo Pop lifting the 2025 World AeroPress Championship trophy',
     name: '2025 World AeroPress Championship recipe',
     author: 'Nemo Pop',
     brewer: 'Aeropress',

@@ -1,54 +1,54 @@
 @import "tailwindcss";
-@import "@fontsource-variable/manrope";
-@import "@fontsource/dm-serif-display";
+@import "@fontsource-variable/montserrat";
+@import "@fontsource-variable/raleway";
+@import "@fontsource/righteous";
 
-/* Light: minimal. Dark: moody. Both themes carry the same token names, so a
-   component never needs to know which one is active.
+/* Bold Brew: a white ground, near-black ink and one hot orange, used for
+   decoration (glows, arcs, brackets, sparkles) more than for text. Primary
+   buttons are ink-filled, so they flip with the theme.
 
-   The dark block is written twice on purpose: once for devices set to dark that
-   have no saved choice, once for an explicit choice. A saved choice always wins
-   over the device setting. */
+   The dark block is a straight inversion for now; it has not had its own
+   design pass. It is written twice on purpose: once for devices set to dark
+   that have no saved choice, once for an explicit choice. A saved choice
+   always wins over the device setting. */
 :root {
-  --bg: #f7f4ee;
-  --surface: #ffffff;
-  --ink: #1f1a16;
-  --ink-soft: #6a5f55;
-  --accent: #b4531f;
-  --accent-ink: #ffffff;
-  --line: #e4ded3;
-  /* Light stays flat; dark paints a warm glow over the top corners. */
-  --glow: none;
-  --photo-dim: 1;
+  --bg: #ffffff;
+  /* Fills for pills, inputs, chips and stat circles. */
+  --surface: #f2f2f2;
+  --ink: #111111;
+  --ink-soft: #5e5e5e;
+  --accent: #f26b1f;
+  /* Orange text only ever sits at 19px bold or larger, where 3:1 is enough. */
+  --accent-text: #e8600f;
+  --accent-tint: #ffe3d2;
+  --line: #e6e6e6;
+  --glow: rgb(242 107 31 / 0.55);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #14100d;
-    --surface: #1e1814;
-    --ink: #f2e9dc;
-    --ink-soft: #b3a594;
-    --accent: #f2a33a;
-    --accent-ink: #14100d;
-    --line: #33291f;
-    --glow:
-      radial-gradient(80vw 60vh at 85% -10%, rgb(242 163 58 / 0.14), transparent 70%),
-      radial-gradient(70vw 50vh at 0% 0%, rgb(180 83 31 / 0.12), transparent 70%);
-    --photo-dim: 0.78;
+    --bg: #111111;
+    --surface: #1f1f1f;
+    --ink: #f5f5f5;
+    --ink-soft: #a8a8a8;
+    --accent: #f26b1f;
+    --accent-text: #ff8a4a;
+    --accent-tint: #4a2410;
+    --line: #2c2c2c;
+    --glow: rgb(242 107 31 / 0.45);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #14100d;
-  --surface: #1e1814;
-  --ink: #f2e9dc;
-  --ink-soft: #b3a594;
-  --accent: #f2a33a;
-  --accent-ink: #14100d;
-  --line: #33291f;
-  --glow:
-    radial-gradient(80vw 60vh at 85% -10%, rgb(242 163 58 / 0.14), transparent 70%),
-    radial-gradient(70vw 50vh at 0% 0%, rgb(180 83 31 / 0.12), transparent 70%);
-  --photo-dim: 0.78;
+  --bg: #111111;
+  --surface: #1f1f1f;
+  --ink: #f5f5f5;
+  --ink-soft: #a8a8a8;
+  --accent: #f26b1f;
+  --accent-text: #ff8a4a;
+  --accent-tint: #4a2410;
+  --line: #2c2c2c;
+  --glow: rgb(242 107 31 / 0.45);
 }
 
 @theme inline {
@@ -57,10 +57,12 @@
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-accent: var(--accent);
-  --color-accent-ink: var(--accent-ink);
+  --color-accent-text: var(--accent-text);
+  --color-accent-tint: var(--accent-tint);
   --color-line: var(--line);
-  --font-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "DM Serif Display", ui-serif, Georgia, serif;
+  --font-sans: "Raleway Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Righteous", ui-sans-serif, system-ui, sans-serif;
 }
 
 html, body, #root { height: 100%; }
@@ -69,22 +71,35 @@ html, body, #root { height: 100%; }
 html { scrollbar-gutter: stable; }
 body {
   background-color: var(--bg);
-  background-image: var(--glow);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
   color: var(--ink);
   font-family: var(--font-sans);
+  /* Raleway defaults to old-style figures, which turn "V60" into "V6o". */
+  font-variant-numeric: lining-nums;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* DM Serif Display ships a single weight (400). Asking for a bolder one makes
-   the browser smear a synthetic bold, so pin the weight and refuse synthesis:
-   headings get their emphasis from size, not weight. */
+/* The hairline display face: huge words like "Recipes" and the gram readouts. */
 .font-display {
   font-family: var(--font-display);
+  font-weight: 200;
+  letter-spacing: -0.045em;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+/* Figures in Montserrat at reading weight: doses, times, ratios. */
+.font-figure {
+  font-family: var(--font-display);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+/* Righteous ships one weight; asking for bold would smear a synthetic one. */
+.font-heading {
+  font-family: var(--font-heading);
   font-weight: 400;
   font-synthesis-weight: none;
-  letter-spacing: -0.015em;
+}
+
+/* The orange glow that sits behind a hero photo. */
+.glow {
+  background: radial-gradient(circle, var(--glow) 0%, rgb(242 107 31 / 0.18) 38%, transparent 68%);
 }
 
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
@@ -105,15 +120,3 @@ body {
 
 @keyframes slide-up { from { transform: translateY(100%); } to { transform: none; } }
 .animate-slide-up { animation: slide-up 220ms cubic-bezier(0.22, 1, 0.36, 1); }
-
-@keyframes steam {
-  0% { opacity: 0; transform: translateY(6px); }
-  40% { opacity: 0.8; }
-  100% { opacity: 0; transform: translateY(-8px); }
-}
-.animate-steam { opacity: 0; animation: steam 2.8s ease-out infinite; }
-/* The blanket rule above would spin an endless animation at 0.01 ms per loop,
-   which flickers. Hold the wisps still instead. */
-@media (prefers-reduced-motion: reduce) {
-  .animate-steam { animation: none; opacity: 0.6; }
-}

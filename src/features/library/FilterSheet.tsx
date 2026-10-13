@@ -24,8 +24,8 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
       type="button"
       aria-pressed={on}
       onClick={onClick}
-      className={`min-h-12 rounded-full px-4 text-base transition-colors ${
-        on ? 'bg-accent font-semibold text-accent-ink' : 'border-2 border-line bg-surface text-ink'
+      className={`h-11 rounded-full px-4 text-[15px] transition-colors ${
+        on ? 'bg-ink font-semibold text-bg' : 'bg-surface font-medium text-ink'
       }`}
     >
       {children}
@@ -35,8 +35,8 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
 
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <section className="py-3" aria-label={label}>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-ink-soft">{label}</h3>
+    <section className="pt-[18px]" aria-label={label}>
+      <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-ink-soft">{label}</h3>
       <div className="flex flex-wrap gap-2">{children}</div>
     </section>
   )
@@ -66,21 +66,21 @@ export function FilterSheet({ open, onClose, query, onChange, recipes, shownCoun
             type="button"
             onClick={() => onChange({ brewer: 'any', author: 'any', time: 'any' })}
             disabled={count === 0}
-            className="h-14 flex-1 rounded-2xl border-2 border-line bg-surface text-lg font-semibold disabled:opacity-40"
+            className="h-14 flex-1 rounded-sm border border-ink text-base font-bold disabled:opacity-40"
           >
             Reset
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="h-14 flex-[2] rounded-2xl bg-accent text-lg font-semibold text-accent-ink"
+            className="h-14 flex-[2] rounded-sm bg-ink text-base font-bold text-bg"
           >
             Show {shownCount} {shownCount === 1 ? 'recipe' : 'recipes'}
           </button>
         </div>
       }
     >
-      <p className="pb-1 text-ink-soft">The list updates as you choose.</p>
+      <p className="text-sm text-ink-soft">The list updates as you choose.</p>
 
       <Group label="Brewer">
         <Chip on={query.brewer === 'any'} onClick={() => onChange({ brewer: 'any' })}>Any brewer</Chip>
@@ -108,8 +108,8 @@ export function FilterSheet({ open, onClose, query, onChange, recipes, shownCoun
         ))}
       </Group>
 
-      <p className="pb-2 pt-1 text-sm text-ink-soft">
-        Search and the All / Favorites / Mine buttons stay on the Library screen.
+      <p className="pb-2 pt-5 text-[13px] leading-relaxed text-ink-soft">
+        Search and All / Favorites / Mine stay on the Library.
         {' '}Reset clears {DEFAULT_QUERY.sort === query.sort ? 'the filters' : 'the filters but keeps your sort'}.
       </p>
     </Sheet>

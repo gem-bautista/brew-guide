@@ -30,8 +30,10 @@ export interface RecipeDraft {
   notes: string
   steps: StepDraft[]
   total: string
+  /** The recipe's photo as stored on the recipe, or '' for none. */
+  photo: string
   /** Fields the editor does not show but must carry over unchanged. */
-  keep: Pick<Recipe, 'family' | 'copiedFromId' | 'source' | 'verification' | 'createdAt'>
+  keep: Pick<Recipe, 'family' | 'copiedFromId' | 'source' | 'verification' | 'createdAt' | 'photoAlt'>
 }
 
 export const carriesWater = (kind: Kind) => (POUR_KINDS as readonly string[]).includes(kind)
@@ -53,6 +55,7 @@ export function templateDraft(): RecipeDraft {
       step('pour', '1:20', '90', 'Pour the rest up to 240 g.'),
     ],
     total: '3:00',
+    photo: '',
     keep: {},
   }
 }
@@ -67,7 +70,8 @@ export function recipeToDraft(r: Recipe): RecipeDraft {
       key: uid(), kind: s.kind, start: formatClock(s.startSec), water: s.waterG?.toString() ?? '', instruction: s.instruction,
     })),
     total: formatClock(r.totalSec),
-    keep: { family: r.family, copiedFromId: r.copiedFromId, source: r.source, verification: r.verification, createdAt: r.createdAt },
+    photo: r.photo ?? '',
+    keep: { family: r.family, copiedFromId: r.copiedFromId, source: r.source, verification: r.verification, createdAt: r.createdAt, photoAlt: r.photoAlt },
   }
 }
 
@@ -82,6 +86,7 @@ export function duplicateDraft(r: Recipe): RecipeDraft {
       copiedFromId: r.id,
       source: { label: `Copied from ${r.name} by ${r.author}`, url: r.source?.url },
       verification: 'user-supplied',
+      photoAlt: d.keep.photoAlt,
     },
   }
 }
@@ -129,6 +134,7 @@ export function draftToRecipe(d: RecipeDraft, nowMs: number): DraftResult {
     ...d.keep,
     createdAt: d.keep.createdAt ?? nowMs,
     brewer: d.brewer,
+    photo: d.photo || undefined,
     doseG: dose,
     tempC: temp,
     grind: {
