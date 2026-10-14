@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
-import type { Recipe, Step } from '../../domain/schema'
+import type { Recipe } from '../../domain/schema'
 import { cumulativeWater, ratio, totalWater } from '../../domain/cumulative'
 import { scaleRecipe } from '../../domain/scale'
 import { formatClock } from '../../domain/clock'
-import { fillFraction, POUR_SEC } from '../../domain/fill'
+import { POUR_SEC } from '../../domain/fill'
+import { sceneAt } from '../../domain/scene'
+import { BrewScene } from '../../ui/BrewScene'
+import { StepList } from './StepList'
 import { RecipePhoto } from '../../ui/RecipePhoto'
 import { Ring, Rule, Sparkle } from '../../ui/Ornaments'
 import { Star, Wordmark } from '../library/Library'
@@ -20,10 +23,6 @@ function useMediaQuery(query: string) {
     },
     () => window.matchMedia(query).matches,
   )
-}
-
-const VERB: Record<Step['kind'], string> = {
-  pour: 'Pour', bloom: 'Bloom', stir: 'Stir', swirl: 'Swirl', wait: 'Wait', press: 'Press', drawdown: 'Let it drain',
 }
 
 const VERIFICATION = {
@@ -45,8 +44,11 @@ function Digits({ text, className = '' }: { text: string; className?: string }) 
   )
 }
 
-const primaryClass = 'flex h-14 flex-[1.5] items-center justify-center gap-2.5 rounded-sm bg-ink text-base font-bold text-bg transition-transform active:scale-[0.98]'
-const secondaryClass = 'grid h-14 flex-1 place-items-center rounded-sm border border-ink text-base font-bold transition-transform active:scale-[0.98]'
+const primaryClass = 'flex h-14 flex-[1.5] items-center justify-center gap-2.5 rounded-sm bg-ink text-base font-bold text-bg transition-transform active:scale-[0.98] tab:h-16 tab:text-lg'
+const secondaryClass = 'grid h-14 flex-1 place-items-center rounded-sm border border-ink text-base font-bold transition-transform active:scale-[0.98] tab:h-16 tab:text-lg'
+
+/** The page column: phone-narrow, wider on an iPad, two columns' worth sideways. */
+const pageClass = 'mx-auto flex min-h-full w-full max-w-xl flex-col overflow-x-clip px-5 pb-6 pt-[18px] tab:max-w-3xl tab:px-10 tab:pb-10 tab:pt-6 land:max-w-6xl'
 
 function Arrow() {
   return (
@@ -70,20 +72,24 @@ function BackLink({ href, children }: { href?: string; children: React.ReactNode
 
 /** Longer names step down a size, so the hairline title never needs more than two lines. */
 function titleSize(name: string) {
-  return name.length <= 12 ? 'text-[clamp(44px,15vw,66px)]' : name.length <= 22 ? 'text-[clamp(36px,11vw,48px)]' : 'text-[clamp(30px,9vw,38px)]'
+  return name.length <= 12
+    ? 'text-[clamp(44px,15vw,66px)] tab:text-[84px]'
+    : name.length <= 22
+      ? 'text-[clamp(36px,11vw,48px)] tab:text-[64px]'
+      : 'text-[clamp(30px,9vw,38px)] tab:text-[52px] land:text-[46px]'
 }
 
 function Pill({ icon, value, label }: { icon: string; value: string; label: string }) {
   return (
-    <li className="flex min-w-0 items-center gap-2 rounded-xl bg-surface p-1">
-      <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[9px] bg-bg">
-        <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <li className="flex min-w-0 items-center gap-2 rounded-xl bg-surface p-1 tab:gap-3 tab:p-1.5">
+      <span className="grid size-[34px] shrink-0 place-items-center rounded-[9px] bg-bg tab:size-11 tab:rounded-[11px]">
+        <svg viewBox="0 0 24 24" aria-hidden fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-[17px] tab:size-5">
           <path d={icon} />
         </svg>
       </span>
       <span className="min-w-0 leading-tight">
-        <span className="font-figure block truncate text-[13px]">{value}</span>
-        <span className="block truncate text-[11px] text-ink-soft">{label}</span>
+        <span className="font-figure block truncate text-[13px] tab:text-base">{value}</span>
+        <span className="block truncate text-[11px] text-ink-soft tab:text-[13px]">{label}</span>
       </span>
     </li>
   )
@@ -112,8 +118,10 @@ function Preview({ recipe, backHref, extra, favorite, onStart, resumable, onResu
     ? { value: `ZP6 ${recipe.grind.zp6Clicks}`, label: recipe.grind.zp6Estimated ? 'estimate' : 'your setting' }
     : { value: recipe.grind.scale, label: 'grind' }
 
+  const stepButton = 'font-figure size-11 rounded-sm border border-ink text-2xl font-light disabled:opacity-30 tab:size-14 tab:text-3xl'
+
   return (
-    <div className="mx-auto flex min-h-full max-w-xl flex-col overflow-x-clip px-5 pb-6 pt-[18px]">
+    <div className={pageClass}>
       <header className="flex h-11 items-center justify-between">
         <BackLink href={backHref}>Library</BackLink>
         {favorite && (
@@ -128,82 +136,96 @@ function Preview({ recipe, backHref, extra, favorite, onStart, resumable, onResu
         )}
       </header>
 
-      <p className="mt-2 text-center text-[19px] font-bold text-accent-text">{recipe.author} · {recipe.brewer}</p>
-      <h1 className={`font-display relative z-10 text-center leading-[1.05] [text-wrap:balance] ${titleSize(recipe.name)}`}>{recipe.name}</h1>
+      {/* One column on a phone or an upright iPad. Sideways, the photo takes the
+          left column and the title and details share the right one. */}
+      <div className="flex flex-1 flex-col land:grid land:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] land:grid-rows-[auto_auto] land:content-center land:gap-x-16 land:py-4">
+        <div className="mt-2 text-center tab:mt-4 land:col-start-2 land:row-start-1 land:mt-0 land:self-end land:text-left">
+          <p className="text-[19px] font-bold text-accent-text tab:text-[22px]">{recipe.author} · {recipe.brewer}</p>
+          <h1 className={`font-display mt-1 leading-[1.05] [text-wrap:balance] ${titleSize(recipe.name)}`}>{recipe.name}</h1>
+        </div>
 
-      <div className="relative z-20 -mt-2.5 grid h-[292px] place-items-center">
-        <div aria-hidden className="glow absolute left-1/2 top-[52%] h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full" />
-        <Sparkle size={20} className="absolute left-[6%] top-6 text-ink" />
-        <Sparkle size={12} className="absolute left-[12%] top-14 text-accent" />
-        <RecipePhoto
-          recipe={recipe}
-          markSize={72}
-          className="relative h-[292px] w-[236px] rounded-b-[18px] rounded-t-[118px] shadow-[0_24px_50px_rgb(150_60_10/0.22)]"
-        />
-      </div>
+        {/* The photo sits clear of the title: a two-line name used to run under it. */}
+        <div className="relative mx-auto mt-6 aspect-[236/292] w-[236px] tab:mt-8 tab:w-[260px] land:col-start-1 land:row-span-2 land:row-start-1 land:mt-0 land:h-[min(70svh,560px)] land:w-auto land:self-center">
+          <div aria-hidden className="glow absolute left-1/2 top-[52%] aspect-square w-[170%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+          <Sparkle size={20} className="absolute -left-[26%] top-[4%] text-ink" />
+          <Sparkle size={12} className="absolute -left-[14%] top-[16%] text-accent" />
+          <RecipePhoto
+            recipe={recipe}
+            markSize={72}
+            className="relative size-full rounded-b-[18px] rounded-t-[50%_40.4%] shadow-[0_24px_50px_rgb(150_60_10/0.22)]"
+          />
+        </div>
 
-      <ul className="mt-[18px] grid grid-cols-3 gap-2">
-        <Pill icon={ICON.temp} value={`${recipe.tempC} °C`} label="water" />
-        <Pill icon={ICON.grind} value={grind.value} label={grind.label} />
-        <Pill icon={ICON.time} value={formatClock(recipe.totalSec)} label="total" />
-      </ul>
+        <div className="flex flex-1 flex-col land:col-start-2 land:row-start-2 land:flex-none">
+          <ul className="mt-7 grid grid-cols-3 gap-2 tab:mt-8 tab:gap-3 land:mt-5">
+            <Pill icon={ICON.temp} value={`${recipe.tempC} °C`} label="water" />
+            <Pill icon={ICON.grind} value={grind.value} label={grind.label} />
+            <Pill icon={ICON.time} value={formatClock(recipe.totalSec)} label="total" />
+          </ul>
 
-      {resumable && (
-        <div className="mt-5 rounded-2xl bg-accent-tint p-4">
-          <p className="font-semibold">A brew of {resumable.recipe.name} is still running.</p>
-          <div className="mt-3 flex gap-3">
-            <button className={primaryClass} onClick={onResume}>Resume brew</button>
-            <button className={secondaryClass} onClick={onDiscard}>Discard</button>
+          {resumable && (
+            <div className="mt-5 rounded-2xl bg-accent-tint p-4">
+              <p className="font-semibold">A brew of {resumable.recipe.name} is still running.</p>
+              <div className="mt-3 flex gap-3">
+                <button className={primaryClass} onClick={onResume}>Resume brew</button>
+                <button className={secondaryClass} onClick={onDiscard}>Discard</button>
+              </div>
+            </div>
+          )}
+
+          {(recipe.grind.authorText || recipe.timingNote || recipe.notes) && (
+            <div className="mt-4 max-w-[62ch] space-y-2 text-[15px] leading-relaxed text-ink-soft [text-wrap:pretty] tab:mt-5 tab:text-base">
+              {recipe.notes && <p>{recipe.notes}</p>}
+              {recipe.timingNote && <p>{recipe.timingNote}</p>}
+              {recipe.grind.authorText && <p><span className="font-semibold text-ink">Author&rsquo;s grind:</span> {recipe.grind.authorText}</p>}
+            </div>
+          )}
+
+          {recipe.source && (
+            <p className="mt-3 text-sm text-ink-soft tab:text-[15px]">
+              {VERIFICATION[recipe.verification ?? 'verified']}{' '}
+              {recipe.source.url ? (
+                <a className="underline underline-offset-4" href={recipe.source.url} target="_blank" rel="noreferrer">{recipe.source.label}</a>
+              ) : recipe.source.label}
+            </p>
+          )}
+
+          {/* The route, scaled with the dose, in the same rows the brew will follow. */}
+          <section aria-labelledby="route" className="mt-6 tab:mt-8">
+            <h2 id="route" className="text-[13px] font-bold uppercase tracking-[0.12em] text-ink-soft">Steps</h2>
+            <StepList recipe={scaled} className="-mx-3 mt-1.5 tab:-mx-4" />
+          </section>
+
+          <div className="mt-auto flex items-center justify-between gap-4 pt-6 tab:pt-8 land:mt-6 land:pt-0">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-ink-soft tab:text-base">Dose</span>
+              <Rule className="h-[30px] tab:h-10" />
+              <span className="leading-none">
+                <span className="font-display block text-[38px] font-light tracking-[-0.03em] tab:text-[52px]"><Digits text={`${dose}`} /> g</span>
+                <span className="font-figure mt-1 block text-xs text-ink-soft tab:text-sm">{water} g water · 1:{+ratio(scaled).toFixed(1)}</span>
+              </span>
+            </div>
+            <div className="flex gap-2 tab:gap-3">
+              <button aria-label="Less coffee" disabled={!recipe.scalable} onClick={() => setDose((d) => Math.max(5, d - 1))} className={stepButton}>−</button>
+              <button aria-label="More coffee" disabled={!recipe.scalable} onClick={() => setDose((d) => Math.min(60, d + 1))} className={stepButton}>+</button>
+            </div>
           </div>
-        </div>
-      )}
+          {!recipe.scalable && <p className="mt-2 text-sm text-ink-soft">This recipe is fixed, so the dose can&rsquo;t be changed.</p>}
 
-      {(recipe.grind.authorText || recipe.timingNote || recipe.notes) && (
-        <div className="mt-4 space-y-2 text-[15px] leading-relaxed text-ink-soft [text-wrap:pretty]">
-          {recipe.notes && <p>{recipe.notes}</p>}
-          {recipe.timingNote && <p>{recipe.timingNote}</p>}
-          {recipe.grind.authorText && <p><span className="font-semibold text-ink">Author&rsquo;s grind:</span> {recipe.grind.authorText}</p>}
-        </div>
-      )}
-
-      {recipe.source && (
-        <p className="mt-3 text-sm text-ink-soft">
-          {VERIFICATION[recipe.verification ?? 'verified']}{' '}
-          {recipe.source.url ? (
-            <a className="underline underline-offset-4" href={recipe.source.url} target="_blank" rel="noreferrer">{recipe.source.label}</a>
-          ) : recipe.source.label}
-        </p>
-      )}
-
-      <div className="mt-auto flex items-center justify-between gap-4 pt-6">
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-ink-soft">Dose</span>
-          <Rule className="h-[30px]" />
-          <span className="leading-none">
-            <span className="font-display block text-[38px] font-light tracking-[-0.03em]"><Digits text={`${dose}`} /> g</span>
-            <span className="font-figure mt-1 block text-xs text-ink-soft">{water} g water · 1:{+ratio(scaled).toFixed(1)}</span>
-          </span>
-        </div>
-        <div className="flex gap-2">
-          <button aria-label="Less coffee" disabled={!recipe.scalable} onClick={() => setDose((d) => Math.max(5, d - 1))}
-            className="font-figure h-11 w-11 rounded-sm border border-ink text-2xl font-light disabled:opacity-30">−</button>
-          <button aria-label="More coffee" disabled={!recipe.scalable} onClick={() => setDose((d) => Math.min(60, d + 1))}
-            className="font-figure h-11 w-11 rounded-sm border border-ink text-2xl font-light disabled:opacity-30">+</button>
+          <button className={`${primaryClass} mt-[18px] w-full flex-none text-[17px] tab:mt-5`} onClick={() => onStart(scaled)}>
+            Start brew <Arrow />
+          </button>
+          {extra && <div className="mt-3 flex gap-3">{extra}</div>}
         </div>
       </div>
-      {!recipe.scalable && <p className="mt-2 text-sm text-ink-soft">This recipe is fixed, so the dose can&rsquo;t be changed.</p>}
-
-      <button className={`${primaryClass} mt-[18px] w-full flex-none text-[17px]`} onClick={() => onStart(scaled)}>
-        Start brew <Arrow />
-      </button>
-      {extra && <div className="mt-3 flex gap-3">{extra}</div>}
     </div>
   )
 }
 
-function Brewing({ recipe, elapsed, paused, position, backHref, onPause, onNext, onStop }: {
+function Brewing({ recipe, elapsed, countIn, paused, position, backHref, onPause, onNext, onStop }: {
   recipe: Recipe
   elapsed: number
+  countIn: number
   paused: boolean
   position: NonNullable<ReturnType<typeof useBrewSession>['position']>
   backHref?: string
@@ -211,30 +233,20 @@ function Brewing({ recipe, elapsed, paused, position, backHref, onPause, onNext,
   onNext: () => void
   onStop: () => void
 }) {
+  const reducedMotion = useMediaQuery(REDUCED_MOTION)
   const cumulative = cumulativeWater(recipe.steps)
   const total = totalWater(recipe)
-  const upcoming = position.stepIndex < 0
+  const counting = countIn > 0
   const index = Math.max(position.stepIndex, 0)
-  const step = recipe.steps[index]!
-  const following = recipe.steps[position.stepIndex + 1]
   const isLast = position.stepIndex === recipe.steps.length - 1
-  const reducedMotion = useMediaQuery(REDUCED_MOTION)
-  // Short phones get smaller rings so every control stays on screen.
-  const short = useMediaQuery('(max-height: 760px)')
-  const big = short ? 220 : 280
-  const small = short ? 100 : 120
-
-  // Grams on the scale: this Pour's target, or what the last Pour reached.
-  const onScale = upcoming ? 0 : (cumulative[index] ?? 0)
-  const fill = fillFraction(recipe, elapsed, reducedMotion ? 0 : POUR_SEC)
-  const intervalStart = upcoming ? 0 : step.startSec
-  const intervalEnd = following?.startSec ?? recipe.totalSec
-  const countdown = intervalEnd > intervalStart ? position.secondsToNext / (intervalEnd - intervalStart) : 0
-  const tagline = paused ? 'Paused' : upcoming ? 'Get ready' : `Step ${index + 1} of ${recipe.steps.length}`
+  const scene = sceneAt(recipe, elapsed, reducedMotion ? 0 : POUR_SEC)
+  // The Scale target: what the current Pour should bring the scale to, or what the last one reached.
+  const target = cumulative[index] ?? 0
+  const tagline = counting ? 'Get ready' : paused ? 'Paused' : `Step ${index + 1} of ${recipe.steps.length}`
 
   return (
-    <div className="mx-auto flex min-h-full max-w-xl flex-col overflow-x-clip px-5 pb-6 pt-[18px]">
-      <header className="flex h-11 items-center justify-between gap-3">
+    <div className="mx-auto flex h-svh w-full max-w-xl flex-col overflow-hidden px-5 pb-5 pt-[18px] tab:max-w-3xl tab:px-10 tab:pb-8 tab:pt-6 land:max-w-6xl">
+      <header className="flex h-11 shrink-0 items-center justify-between gap-3">
         <BackLink href={backHref}>{recipe.name}</BackLink>
         <button
           className="h-11 shrink-0 rounded-sm border border-ink px-3.5 text-sm font-medium"
@@ -244,64 +256,58 @@ function Brewing({ recipe, elapsed, paused, position, backHref, onPause, onNext,
         </button>
       </header>
 
-      <p className="mt-2 text-center text-[19px] font-bold text-accent-text" aria-live="polite">{tagline}</p>
-
-      <main className="flex flex-1 flex-col items-center" aria-live="polite">
-        <div className="relative mt-3">
-          <Ring size={big} fraction={fill} gap={12}>
-            <span className="font-display font-light leading-[0.9]" style={{ fontSize: big * 0.34 }}>
-              <Digits text={`${onScale}`} /><span className="ml-1 text-[0.32em] tracking-normal">g</span>
-            </span>
-            <span className="mt-2 text-sm text-ink-soft">on the scale, of {total} g</span>
-            {!upcoming && (
-              <span className="mt-3 rounded-full bg-accent-tint px-3 py-1.5 text-[13px] font-bold">
-                {step.waterG !== undefined ? `Add ${step.waterG} g now` : `${VERB[step.kind]} now`}
-              </span>
+      {/* Stacked on a phone or an upright iPad: the scene on top, the list
+          below. Sideways, the scene takes the left column and the list the right. */}
+      <main className="flex min-h-0 flex-1 flex-col land:grid land:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] land:gap-x-14">
+        <section aria-label="Brew" className="flex min-h-0 shrink-0 flex-col items-center land:h-full land:justify-center">
+          <div className="relative h-[33svh] tab:h-[38svh] land:h-auto land:min-h-0 land:w-full land:flex-1 land:max-h-[62svh]">
+            <div aria-hidden className="glow absolute left-1/2 top-[55%] aspect-square h-[90%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+            <BrewScene brewer={recipe.brewer} scene={scene} className="relative h-full w-full" />
+            {counting && (
+              <div className="absolute inset-0 grid place-items-center" aria-live="assertive">
+                <span key={Math.ceil(countIn)} className="animate-count-in font-display grid size-[clamp(96px,16svh,160px)] place-items-center rounded-full bg-bg/90 text-[clamp(64px,11svh,110px)] font-light leading-none shadow-[0_12px_40px_rgb(150_60_10/0.25)]">
+                  <span className="sr-only">Starting in </span>{Math.ceil(countIn)}
+                </span>
+              </div>
             )}
-          </Ring>
-          <Sparkle size={12} className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-accent" />
-        </div>
-
-        <div className="mt-[18px] flex gap-[22px]">
-          <div role="progressbar" aria-label="Brew progress" aria-valuemin={0} aria-valuemax={recipe.totalSec} aria-valuenow={Math.round(elapsed)}>
-            <Ring size={small} fraction={elapsed / recipe.totalSec}>
-              <Digits text={formatClock(elapsed)} className="font-figure text-[30px] font-light leading-none" />
-              <span className="mt-1 text-xs text-ink-soft">elapsed</span>
-            </Ring>
           </div>
-          <Ring size={small} fraction={countdown}>
-            <Digits text={formatClock(position.secondsToNext)} className="font-figure text-[30px] font-light leading-none" />
-            <span className="mt-1 text-xs text-ink-soft">{following ? `to next ${VERB[following.kind].toLowerCase()}` : 'to done'}</span>
-          </Ring>
-        </div>
+          <div className="mt-2 flex w-full items-end justify-center gap-5 tab:mt-4 tab:gap-8">
+            <p className="text-right leading-none">
+              <span className="font-display block text-[44px] font-light tab:text-[64px]">
+                <Digits text={`${target}`} /><span className="ml-1 text-[0.4em] tracking-normal">g</span>
+              </span>
+              <span className="mt-1.5 block text-[13px] text-ink-soft tab:text-[15px]">on the scale, of {total} g</span>
+            </p>
+            <Rule className="h-12 tab:h-16" />
+            <p className="leading-none" role="timer" aria-label={`${formatClock(elapsed)} elapsed`}>
+              <Digits text={formatClock(elapsed)} className="font-display block text-[44px] font-light tab:text-[64px]" />
+              <span className="mt-1.5 block text-[13px] text-ink-soft tab:text-[15px]">elapsed</span>
+            </p>
+          </div>
+        </section>
 
-        <h1 className="mt-5 text-center font-heading text-[30px] leading-tight">
-          {upcoming ? `Next: ${VERB[step.kind]}` : VERB[step.kind]}{step.waterG !== undefined ? ` ${step.waterG} g` : ''}
-        </h1>
-        <p className="mt-1.5 max-w-[34ch] text-center text-[15px] leading-snug text-ink-soft [text-wrap:pretty]">{step.instruction}</p>
-
-        <div className="relative mt-5 flex w-full items-center justify-between px-3.5 py-3">
-          <span aria-hidden className="absolute left-0 top-0 h-[30px] w-[46px] rounded-tl-[14px] border-l-[1.5px] border-t-[1.5px] border-accent" />
-          <span aria-hidden className="absolute bottom-0 right-0 h-[30px] w-[46px] rounded-br-[14px] border-b-[1.5px] border-r-[1.5px] border-accent" />
-          <span className="leading-tight">
-            <span className="block text-[11px] font-bold uppercase tracking-[0.12em] text-ink-soft">Up next</span>
-            <span className="font-heading text-[19px]">
-              {following
-                ? `${VERB[following.kind]}${following.waterG !== undefined ? ` to ${cumulative[position.stepIndex + 1]} g` : ''}`
-                : 'Brew done'}
-            </span>
-          </span>
-          <span className="flex items-center gap-2.5">
-            <Rule />
-            <span className="font-figure text-[28px] font-light">{formatClock(following?.startSec ?? recipe.totalSec)}</span>
-          </span>
-        </div>
+        <section aria-label="Steps" className="mt-3 flex min-h-0 flex-1 flex-col tab:mt-6 land:mt-0 land:justify-center">
+          <p className="shrink-0 text-[17px] font-bold text-accent-text tab:text-[22px]" aria-live="polite">{tagline}</p>
+          <StepList
+            recipe={recipe}
+            live={{ stepIndex: index, secondsToNext: position.secondsToNext, reducedMotion }}
+            className="-mx-3 mt-1.5 min-h-0 overflow-y-auto overscroll-contain tab:-mx-4 tab:mt-3 land:flex-none land:max-h-[62svh]"
+          />
+          <div className="mt-auto flex w-full shrink-0 gap-2.5 pt-4 tab:gap-3 tab:pt-6 land:mt-6 land:pt-0">
+            {counting ? (
+              <>
+                <button className={secondaryClass} onClick={onStop}>Cancel</button>
+                <button className={primaryClass} onClick={onNext}>Start now <Arrow /></button>
+              </>
+            ) : (
+              <>
+                <button className={secondaryClass} onClick={onPause}>{paused ? 'Resume' : 'Pause'}</button>
+                <button className={primaryClass} onClick={onNext}>{isLast ? 'Finish' : 'Next step'} <Arrow /></button>
+              </>
+            )}
+          </div>
+        </section>
       </main>
-
-      <div className="mt-6 flex gap-2.5">
-        <button className={secondaryClass} onClick={onPause}>{paused ? 'Resume' : 'Pause'}</button>
-        <button className={primaryClass} onClick={onNext}>{isLast ? 'Finish' : 'Next step'} <Arrow /></button>
-      </div>
     </div>
   )
 }
@@ -313,7 +319,7 @@ function Finished({ recipe, backHref, onAgain }: { recipe: Recipe; backHref?: st
     { value: formatClock(recipe.totalSec), label: 'brew time', fraction: 0 },
   ]
   return (
-    <div className="mx-auto flex min-h-full max-w-xl flex-col overflow-x-clip px-5 pb-6 pt-[18px]">
+    <div className={pageClass}>
       <header className="flex h-11 items-center justify-between">
         <Wordmark />
         {backHref && (
@@ -325,39 +331,43 @@ function Finished({ recipe, backHref, onAgain }: { recipe: Recipe; backHref?: st
         )}
       </header>
 
-      <p className="mt-2.5 text-center text-[19px] font-bold text-accent-text">{recipe.name} · {recipe.author}</p>
-      <h1 className="font-display relative z-10 text-center text-[clamp(52px,17vw,76px)] leading-[1.05]">Brew done</h1>
+      <div className="flex flex-1 flex-col tab:justify-center tab:pb-[6svh] land:grid land:grid-cols-2 land:grid-rows-[repeat(4,auto)] land:content-center land:gap-x-16 land:pb-0">
+        <div className="mt-2.5 text-center tab:mt-4 land:col-start-2 land:row-start-1 land:mt-0 land:text-left">
+          <p className="text-[19px] font-bold text-accent-text tab:text-[22px]">{recipe.name} · {recipe.author}</p>
+          <h1 className="font-display mt-1 text-[clamp(52px,17vw,76px)] leading-[1.05] tab:text-[96px]">Brew done</h1>
+        </div>
 
-      <div className="relative -mt-1.5 grid h-[236px] place-items-center">
-        <div aria-hidden className="glow absolute left-1/2 top-1/2 h-[360px] w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full" />
-        <Sparkle size={22} className="absolute left-[8%] top-3.5 text-ink" />
-        <Sparkle size={14} className="absolute bottom-7 right-[12%] text-accent" />
-        <RecipePhoto recipe={recipe} markSize={64} className="relative h-[210px] w-[210px] rounded-full object-[50%_30%] shadow-[0_20px_44px_rgb(150_60_10/0.22)]" />
-      </div>
+        <div className="relative mx-auto mt-7 size-[210px] tab:mt-10 tab:size-[300px] land:col-start-1 land:row-span-4 land:row-start-1 land:mt-0 land:size-[min(56svh,420px)] land:self-center">
+          <div aria-hidden className="glow absolute left-1/2 top-1/2 aspect-square w-[170%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+          <Sparkle size={22} className="absolute -left-[22%] top-[2%] text-ink land:-left-[6%]" />
+          <Sparkle size={14} className="absolute -right-[14%] bottom-[10%] text-accent" />
+          <RecipePhoto recipe={recipe} markSize={64} className="relative size-full rounded-full object-[50%_30%] shadow-[0_20px_44px_rgb(150_60_10/0.22)]" />
+        </div>
 
-      <ul aria-label="This brew" className="mt-[22px] flex justify-between">
-        {stats.map((s) => (
-          <li key={s.label}>
-            <Ring size={104} fraction={s.fraction} gap={6}>
-              <span className="font-figure text-[26px] font-light leading-none">{s.value}</span>
-              <span className="mt-1 text-xs text-ink-soft">{s.label}</span>
-            </Ring>
-          </li>
-        ))}
-      </ul>
+        <ul aria-label="This brew" className="mt-8 flex justify-between tab:mt-12 tab:justify-center tab:gap-8 land:col-start-2 land:row-start-2 land:mt-8 land:justify-start">
+          {stats.map((s) => (
+            <li key={s.label}>
+              <Ring fraction={s.fraction} gap="6%" className="size-[104px] tab:size-[140px]">
+                <span className="font-figure text-[25cqi] font-light leading-none">{s.value}</span>
+                <span className="mt-1 text-[max(12px,9cqi)] text-ink-soft">{s.label}</span>
+              </Ring>
+            </li>
+          ))}
+        </ul>
 
-      <p className="mt-3.5 flex items-center justify-center gap-3 text-sm text-ink-soft">
-        Ratio<Rule className="h-[22px]" /><span className="font-figure text-2xl font-light text-ink">1:{+ratio(recipe).toFixed(1)}</span>
-      </p>
+        <p className="mt-3.5 flex items-center justify-center gap-3 text-sm text-ink-soft tab:mt-6 tab:text-base land:col-start-2 land:row-start-3 land:justify-start">
+          Ratio<Rule className="h-[22px] tab:h-8" /><span className="font-figure text-2xl font-light text-ink tab:text-[32px]">1:{+ratio(recipe).toFixed(1)}</span>
+        </p>
 
-      <div className="mt-auto flex gap-2.5 pt-6">
-        {backHref && <a href={backHref} className={secondaryClass}>Library</a>}
-        <button className={primaryClass} onClick={onAgain}>
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4" />
-          </svg>
-          Brew again
-        </button>
+        <div className="mt-auto flex gap-2.5 pt-6 tab:mt-12 tab:gap-3 tab:pt-0 land:col-start-2 land:row-start-4 land:mt-10">
+          {backHref && <a href={backHref} className={secondaryClass}>Library</a>}
+          <button className={primaryClass} onClick={onAgain}>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4" />
+            </svg>
+            Brew again
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -385,7 +395,7 @@ export function SessionScreen({ recipe, backHref, extra, favorite }: {
   }
   if (b.finished) return <Finished recipe={b.recipe} backHref={backHref} onAgain={b.stop} />
   return (
-    <Brewing recipe={b.recipe} elapsed={b.elapsed} paused={b.paused} position={b.position} backHref={backHref}
+    <Brewing recipe={b.recipe} elapsed={b.elapsed} countIn={b.countIn} paused={b.paused} position={b.position} backHref={backHref}
       onPause={b.togglePause} onNext={b.next} onStop={b.stop} />
   )
 }

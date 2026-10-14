@@ -1,7 +1,8 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Recipe } from '../../domain/schema'
 import {
-  advanceEarly, elapsedSec, isResumable, pauseSession, positionAt, resumeSession, startSession, type Session,
+  advanceEarly, COUNT_IN_SEC, countInLeft, elapsedSec, isResumable, pauseSession, positionAt, resumeSession, skipCountIn,
+  startSession, type Session,
 } from '../../domain/session'
 import { clearActiveSession, loadActiveSession, saveActiveSession } from '../../storage/activeSession'
 
@@ -37,6 +38,9 @@ export function useBrewSession() {
   const position = recipe && session ? positionAt(recipe.steps, recipe.totalSec, elapsed) : null
   const finished = position?.finished ?? false
   const running = !!session && !paused && !finished
+  /** Seconds of Count-in left; 0 once the clock is running. */
+  const countIn = session ? countInLeft(session, now) : 0
+  const counting = countIn > 0
 
   useEffect(() => {
     if (!running) return
@@ -54,6 +58,16 @@ export function useBrewSession() {
     }
     lastIndex.current = stepIndex
   }, [stepIndex, running])
+
+  // Cue 0:00 when the Count-in runs out: that is when the first Step begins.
+  const wasCounting = useRef(false)
+  useEffect(() => {
+    if (wasCounting.current && !counting && running) {
+      beep(audio.current)
+      navigator.vibrate?.([120, 60, 120])
+    }
+    wasCounting.current = counting
+  }, [counting, running])
 
   // Keep the screen awake while brewing.
   useEffect(() => {
@@ -78,7 +92,7 @@ export function useBrewSession() {
     setNow(t)
     setResumable(null)
     setRecipe(r)
-    setSession(startSession(t))
+    setSession(startSession(t, COUNT_IN_SEC))
   }, [])
 
   const resume = useCallback(() => {
@@ -111,7 +125,7 @@ export function useBrewSession() {
       if (!s || !recipe) return s
       const t = Date.now()
       setNow(t)
-      return advanceEarly(s, recipe.steps, recipe.totalSec, t)
+      return countInLeft(s, t) > 0 ? skipCountIn(s, t) : advanceEarly(s, recipe.steps, recipe.totalSec, t)
     })
   }, [recipe])
 
@@ -121,6 +135,6 @@ export function useBrewSession() {
     setRecipe(null)
   }, [])
 
-  return { recipe, session, elapsed, position, paused, finished, resumable, start, resume, discard, togglePause, next, stop }
+  return { recipe, session, elapsed, countIn, position, paused, finished, resumable, start, resume, discard, togglePause, next, stop }
 }
 

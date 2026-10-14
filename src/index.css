@@ -23,6 +23,21 @@
   --accent-tint: #ffe3d2;
   --line: #e6e6e6;
   --glow: rgb(242 107 31 / 0.55);
+  /* The brewing scene. It has its own dark palette rather than the inversion:
+     inverted coffee would turn pale blue. */
+  --scene-line: #111111;
+  --scene-glass: rgb(17 17 17 / 0.035);
+  --scene-shine: rgb(255 255 255 / 0.9);
+  --scene-paper: #fbf6ee;
+  --scene-paper-line: #e2d6c6;
+  --scene-bed: #4a2c18;
+  --scene-coffee-top: #f08a3a;
+  --scene-coffee: #a4521d;
+  --scene-coffee-deep: #4a2412;
+  --scene-water: #bccbd3;
+  --scene-steam: rgb(17 17 17 / 0.16);
+  --scene-shadow: rgb(150 60 10 / 0.16);
+  --scene-cap: #1c1c1c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -36,6 +51,19 @@
     --accent-tint: #4a2410;
     --line: #2c2c2c;
     --glow: rgb(242 107 31 / 0.45);
+    --scene-line: #e9e4dc;
+    --scene-glass: rgb(255 255 255 / 0.05);
+    --scene-shine: rgb(255 255 255 / 0.22);
+    --scene-paper: #2c2824;
+    --scene-paper-line: #443d36;
+    --scene-bed: #24150c;
+    --scene-coffee-top: #ffa055;
+    --scene-coffee: #c8642a;
+    --scene-coffee-deep: #5c2c14;
+    --scene-water: #7f97a3;
+    --scene-steam: rgb(255 255 255 / 0.22);
+    --scene-shadow: rgb(242 107 31 / 0.14);
+    --scene-cap: #050505;
   }
 }
 
@@ -49,7 +77,29 @@
   --accent-tint: #4a2410;
   --line: #2c2c2c;
   --glow: rgb(242 107 31 / 0.45);
+  --scene-line: #e9e4dc;
+  --scene-glass: rgb(255 255 255 / 0.05);
+  --scene-shine: rgb(255 255 255 / 0.22);
+  --scene-paper: #2c2824;
+  --scene-paper-line: #443d36;
+  --scene-bed: #24150c;
+  --scene-coffee-top: #ffa055;
+  --scene-coffee: #c8642a;
+  --scene-coffee-deep: #5c2c14;
+  --scene-water: #7f97a3;
+  --scene-steam: rgb(255 255 255 / 0.22);
+  --scene-shadow: rgb(242 107 31 / 0.14);
+  --scene-cap: #050505;
 }
+
+/* The iPad is the main brewing screen, propped on the counter and read from
+   arm's length. `tab` is any iPad-sized screen (an iPad mini upright is 744 px
+   wide); it needs height too, so a phone turned sideways keeps the phone
+   layout. `land` is an iPad held sideways or a laptop, where the session
+   screens split into two columns so a whole brew fits without scrolling.
+   `land` is declared second so it wins where both apply. */
+@custom-variant tab (@media (min-width: 700px) and (min-height: 700px));
+@custom-variant land (@media (min-width: 960px) and (min-height: 600px) and (orientation: landscape));
 
 @theme inline {
   --color-bg: var(--bg);
@@ -117,6 +167,55 @@ body {
 @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 /* Keyed on the active filter, so the list cross-fades instead of snapping. */
 .animate-fade-in { animation: fade-in 180ms ease-out; }
+
+/* The brewing scene's loops. Levels move by transition; these only add life. */
+@keyframes scene-steam {
+  0% { transform: translateY(6px); opacity: 0; }
+  40% { opacity: 1; }
+  100% { transform: translateY(-22px); opacity: 0; }
+}
+.scene-steam { animation: scene-steam 3.2s ease-out infinite; }
+@keyframes scene-flow { to { stroke-dashoffset: -28; } }
+.scene-flow { animation: scene-flow 0.45s linear infinite; }
+@keyframes scene-drip {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(var(--fall)); opacity: 0; }
+}
+.scene-drip { animation: scene-drip 1.1s cubic-bezier(0.55, 0, 1, 0.45) infinite; }
+@keyframes scene-swirl {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2.5deg); }
+  75% { transform: rotate(2.5deg); }
+}
+.scene-swirl { animation: scene-swirl 0.7s ease-in-out infinite; }
+@keyframes scene-stir {
+  0%, 100% { transform: rotate(-9deg); }
+  50% { transform: rotate(9deg); }
+}
+.scene-stir { animation: scene-stir 0.9s ease-in-out infinite; }
+@keyframes scene-bubble {
+  0% { transform: scale(0.2); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+.scene-bubble { animation: scene-bubble 1.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes scene-puff {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.07); }
+}
+.scene-puff { animation: scene-puff 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: bottom; }
+@media (prefers-reduced-motion: reduce) {
+  .scene-steam, .scene-flow, .scene-drip, .scene-swirl, .scene-stir, .scene-bubble, .scene-puff { animation: none !important; }
+  .scene-drip, .scene-bubble { display: none; }
+}
+
+/* A done Step's strike line draws across from the left. */
+.strike { transform-origin: left; transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1); }
+
+@keyframes count-in { from { transform: scale(1.35); opacity: 0; } to { transform: none; opacity: 1; } }
+.animate-count-in { animation: count-in 380ms cubic-bezier(0.22, 1, 0.36, 1); }
 
 @keyframes slide-up { from { transform: translateY(100%); } to { transform: none; } }
 .animate-slide-up { animation: slide-up 220ms cubic-bezier(0.22, 1, 0.36, 1); }

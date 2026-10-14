@@ -1,4 +1,4 @@
-﻿import type { Step } from './schema'
+import type { Step } from './schema'
 
 /** A live brew's clock. Position is derived from timestamps, so reloads and sleep cannot drift it. */
 export interface Session {
@@ -11,8 +11,22 @@ export interface Session {
   skippedSec: number
 }
 
-export function startSession(nowMs: number): Session {
-  return { startedAtMs: nowMs, pausedTotalMs: 0, skippedSec: 0 }
+/** Seconds of Count-in before the clock reaches 0:00, so hands can get to the kettle. */
+export const COUNT_IN_SEC = 3
+
+/** A Count-in is a start time in the future: the clock holds at 0:00 until then. */
+export function startSession(nowMs: number, countInSec = 0): Session {
+  return { startedAtMs: nowMs + countInSec * 1000, pausedTotalMs: 0, skippedSec: 0 }
+}
+
+/** Seconds of Count-in left (fractional), or 0 once the clock is running. */
+export function countInLeft(s: Session, nowMs: number): number {
+  return Math.max(0, (s.startedAtMs - nowMs) / 1000)
+}
+
+/** End the Count-in now and start the clock at 0:00. */
+export function skipCountIn(s: Session, nowMs: number): Session {
+  return s.startedAtMs > nowMs ? { ...s, startedAtMs: nowMs } : s
 }
 
 export function pauseSession(s: Session, nowMs: number): Session {

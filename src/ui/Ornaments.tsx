@@ -10,22 +10,24 @@ export function Sparkle({ size = 20, className = '' }: { size?: number; classNam
 /**
  * A stat circle: a filled disc with a thin orange arc around it showing
  * `fraction` (0 to 1) clockwise from the top. Its children sit in the middle.
+ *
+ * Give it a pixel `size`, or leave that out and size it from `className`
+ * (for example `size-[280px] tab:size-[420px]`) so it can change per breakpoint.
+ * The ring is a size container, so children can scale with `cqi` units.
  */
-export function Ring({ size, fraction, stroke = 2.5, gap, children, className = '' }: {
-  size: number
+export function Ring({ size, fraction, stroke = 2.5, gap = '4.5%', children, className = '' }: {
+  size?: number
   fraction: number
   stroke?: number
-  /** Space between the arc and the disc; defaults to a size-relative gap. */
-  gap?: number
+  /** Space between the arc and the disc, in px or as a share of the width. */
+  gap?: number | string
   children?: React.ReactNode
   className?: string
 }) {
   const deg = Math.max(0, Math.min(1, fraction)) * 360
-  const inner = size / 2 - stroke
-  const inset = gap ?? Math.round(size * 0.045)
-  const mask = `radial-gradient(circle, transparent ${inner - 0.5}px, #000 ${inner}px)`
+  const mask = `radial-gradient(closest-side, transparent calc(100% - ${stroke + 0.5}px), #000 calc(100% - ${stroke}px))`
   return (
-    <div className={`relative shrink-0 ${className}`} style={{ width: size, height: size }}>
+    <div className={`@container relative shrink-0 ${className}`} style={size ? { width: size, height: size } : undefined}>
       <div
         aria-hidden
         className="absolute inset-0 rounded-full"
@@ -35,7 +37,7 @@ export function Ring({ size, fraction, stroke = 2.5, gap, children, className = 
           mask,
         }}
       />
-      <div className="absolute flex flex-col items-center justify-center rounded-full bg-surface text-center" style={{ inset }}>
+      <div className="absolute flex flex-col items-center justify-center rounded-full bg-surface text-center" style={{ inset: gap }}>
         {children}
       </div>
     </div>

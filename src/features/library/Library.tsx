@@ -38,13 +38,16 @@ function RecipeCard({ recipe, starred, onToggleFavorite }: {
 }) {
   return (
     <li className="relative">
-      {/* The orange corner bracket that frames each photo in the reference. */}
-      <span aria-hidden className="absolute -right-1.5 top-[8.75rem] h-16 w-8 rounded-br-2xl border-b-[1.5px] border-r-[1.5px] border-accent" />
       <a href={hrefFor({ name: 'recipe', id: recipe.id })} className="relative block">
-        <RecipePhoto recipe={recipe} className="h-[200px] w-full rounded-2xl" />
-        <span className="mt-2.5 block font-heading text-[17px] leading-tight [text-wrap:balance]">{recipe.name}</span>
-        <span className="mt-0.5 block text-[13px] text-ink-soft">{recipe.author}</span>
-        <span className="font-figure mt-1.5 flex items-center gap-2 text-[13px]">
+        {/* Author photos are 4:5 portraits, so the card keeps that shape at every width. */}
+        <span className="relative block">
+          {/* The orange corner bracket that frames each photo in the reference. */}
+          <span aria-hidden className="absolute -bottom-1 -right-1.5 h-16 w-8 rounded-br-2xl border-b-[1.5px] border-r-[1.5px] border-accent" />
+          <RecipePhoto recipe={recipe} className="relative aspect-[4/5] w-full rounded-2xl" />
+        </span>
+        <span className="mt-2.5 block font-heading text-[17px] leading-tight [text-wrap:balance] tab:mt-3 tab:text-xl">{recipe.name}</span>
+        <span className="mt-0.5 block text-[13px] text-ink-soft tab:text-[15px]">{recipe.author}</span>
+        <span className="font-figure mt-1.5 flex items-center gap-2 text-[13px] tab:text-[15px]">
           {recipe.doseG} g<Rule className="h-3.5" />{formatClock(recipe.totalSec)}
         </span>
       </a>
@@ -57,6 +60,14 @@ function RecipeCard({ recipe, starred, onToggleFavorite }: {
         <Star on={starred} />
       </button>
     </li>
+  )
+}
+
+function PlusIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+      <path d="M12 4v16M4 12h16" />
+    </svg>
   )
 }
 
@@ -98,10 +109,15 @@ export function Library({ recipes, favorites, onToggleFavorite, onExport, onImpo
   const filterCount = activeFilterCount(query)
 
   return (
-    <div className="mx-auto max-w-2xl px-5 pb-32 pt-[18px]">
+    <div className="mx-auto max-w-2xl px-5 pb-32 pt-[18px] tab:max-w-5xl tab:px-10 tab:pb-16 tab:pt-6">
       <header className="flex h-11 items-center justify-between">
         <Wordmark />
         <div className="flex gap-2">
+          {/* On an iPad the header has room for it, so it stops floating over the cards. */}
+          <a href={hrefFor({ name: 'new' })} className="hidden h-11 items-center gap-2 rounded-sm bg-ink px-4 text-sm font-bold text-bg tab:flex">
+            <PlusIcon />
+            New recipe
+          </a>
           <button
             onClick={() => setFiltersOpen(true)}
             className="flex h-11 items-center gap-2 rounded-sm border border-ink px-3.5 text-sm font-medium"
@@ -200,7 +216,7 @@ export function Library({ recipes, favorites, onToggleFavorite, onExport, onImpo
         {shown.length === 0 ? (
           <Empty query={query} />
         ) : (
-          <ul key={`${query.source}-${filterCount}`} className="animate-fade-in grid grid-cols-2 gap-x-3.5 gap-y-6 sm:grid-cols-3">
+          <ul key={`${query.source}-${filterCount}`} className="animate-fade-in grid grid-cols-2 gap-x-3.5 gap-y-6 sm:grid-cols-3 tab:gap-x-6 tab:gap-y-9 land:grid-cols-4">
             {shown.map((r) => (
               <RecipeCard
                 key={r.id}
@@ -215,11 +231,9 @@ export function Library({ recipes, favorites, onToggleFavorite, onExport, onImpo
 
       <a
         href={hrefFor({ name: 'new' })}
-        className="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] right-5 flex h-[54px] items-center gap-2.5 rounded-sm bg-ink px-6 text-base font-bold text-bg shadow-[0_12px_30px_rgb(0_0_0/0.22)]"
+        className="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] right-5 flex h-[54px] items-center gap-2.5 rounded-sm bg-ink px-6 text-base font-bold text-bg shadow-[0_12px_30px_rgb(0_0_0/0.22)] tab:hidden"
       >
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
-          <path d="M12 4v16M4 12h16" />
-        </svg>
+        <PlusIcon />
         New recipe
       </a>
 

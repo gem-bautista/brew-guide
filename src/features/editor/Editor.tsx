@@ -234,8 +234,10 @@ export function Editor({ initial, title, cancelHref, onSave }: {
               )}
             </div>
             <div className="mt-2.5">
-              <Field label="What to do">
-                <textarea className="w-full resize-none rounded-[10px] bg-bg px-2.5 py-2.5 text-[15px] leading-snug text-ink" rows={2} value={s.instruction} onChange={(e) => setStep(s.key, { instruction: e.target.value })} />
+              <Field label="Technique (optional)">
+                <textarea className="w-full resize-none rounded-[10px] bg-bg px-2.5 py-2.5 text-[15px] leading-snug text-ink" rows={2} value={s.instruction}
+                  placeholder="Slow circles from the centre out. Grams and times are shown for you."
+                  onChange={(e) => setStep(s.key, { instruction: e.target.value })} />
               </Field>
             </div>
           </li>

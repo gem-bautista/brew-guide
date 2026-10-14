@@ -30,7 +30,7 @@ function NotFound() {
   )
 }
 
-const actionClass = 'grid h-12 flex-1 place-items-center rounded-sm border border-ink text-base font-bold'
+const actionClass = 'grid h-12 flex-1 place-items-center rounded-sm border border-ink text-base font-bold tab:h-14 tab:text-lg'
 
 export function App() {
   const route = useRoute()

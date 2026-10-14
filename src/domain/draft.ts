@@ -49,10 +49,10 @@ export function templateDraft(): RecipeDraft {
     id: uid(), name: '', brewer: 'V60', dose: '15', temp: '94', grindScale: 'medium-fine', zp6: '', zp6Estimated: false,
     authorText: '', microns: '', scalable: true, timingNote: '', notes: '',
     steps: [
-      step('bloom', '0:00', '45', 'Pour 45 g to wet all the grounds.'),
+      step('bloom', '0:00', '45', 'Wet all the grounds.'),
       step('swirl', '0:10', '', 'Swirl gently so no dry pockets remain.'),
-      step('pour', '0:40', '105', 'Pour in slow circles up to 150 g.'),
-      step('pour', '1:20', '90', 'Pour the rest up to 240 g.'),
+      step('pour', '0:40', '105', 'Pour in slow circles.'),
+      step('pour', '1:20', '90', 'Pour the rest in slow circles.'),
     ],
     total: '3:00',
     photo: '',
@@ -114,7 +114,6 @@ export function draftToRecipe(d: RecipeDraft, nowMs: number): DraftResult {
     const label = `Step ${i + 1}`
     const startSec = parseClock(s.start)
     if (startSec === undefined) errors.push(`${label}: start time must look like 0:45.`)
-    if (!s.instruction.trim()) errors.push(`${label}: write what to do.`)
     let waterG: number | undefined
     if (carriesWater(s.kind)) {
       waterG = toNum(s.water)

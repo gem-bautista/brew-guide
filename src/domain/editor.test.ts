@@ -38,7 +38,6 @@ describe('draftToRecipe', () => {
   it('explains every problem in plain words', () => {
     const d = { ...filled(), name: ' ', dose: '0', total: 'soon' }
     d.steps[0]!.water = ''
-    d.steps[1]!.instruction = ''
     const r = draftToRecipe(d, 0)
     expect(r.ok).toBe(false)
     if (!r.ok) {
@@ -46,7 +45,6 @@ describe('draftToRecipe', () => {
       expect(r.errors).toContain('Coffee dose must be a number above 0.')
       expect(r.errors).toContain('Total brew time must look like 3:30.')
       expect(r.errors).toContain('Step 1: water must be a whole number of grams above 0.')
-      expect(r.errors).toContain('Step 2: write what to do.')
     }
   })
   it('rejects two steps at the same time and a brew that ends too soon', () => {

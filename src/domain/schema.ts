@@ -1,4 +1,4 @@
-﻿import { z } from 'zod'
+import { z } from 'zod'
 
 export const BREWERS = ['V60', 'Kalita Wave', 'Chemex', 'Aeropress', 'Origami', 'April', 'Orea', 'Other'] as const
 export const STEP_KINDS = ['pour', 'bloom', 'stir', 'swirl', 'wait', 'press', 'drawdown'] as const
@@ -14,7 +14,8 @@ export const StepSchema = z.object({
   startSec: z.number().int().min(0),
   /** Grams of water added in this step; only pours and blooms carry water. */
   waterG: z.number().int().positive().optional(),
-  instruction: z.string().min(1),
+  /** The technique, without grams or times the fields already carry (ADR 0004). May be empty. */
+  instruction: z.string(),
 })
 
 export const RecipeSchema = z
