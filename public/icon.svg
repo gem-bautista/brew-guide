@@ -1,0 +1,25 @@
+<!-- Brew Guide app icon: a Fellow Stagg EKG pouring into a V60. The PNG icons in public/ are rendered from this file. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#f26b1f" stop-opacity="0.6"/>
+      <stop offset="0.55" stop-color="#f26b1f" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#f26b1f" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="brew" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f08a3a"/>
+      <stop offset="1" stop-color="#a4521d"/>
+    </linearGradient>
+  </defs>
+<rect width="512" height="512" fill="#ffffff"/>
+<circle cx="256" cy="300" r="215" fill="url(#glow)"/>
+<path d="M256 182V338" fill="none" stroke="#f26b1f" stroke-width="6" stroke-linecap="round"/>
+<path d="M154 268H358L286 392H226Z" fill="#fbf6ee"/>
+<path d="M195 340H317L286 392H226Z" fill="url(#brew)"/>
+<path d="M196 290Q218 336 240 384M316 290Q294 336 272 384" fill="none" stroke="#111" stroke-width="4" stroke-linecap="round" opacity="0.15"/>
+<path d="M154 268H358L286 392H226Z" fill="none" stroke="#111" stroke-width="16" stroke-linejoin="round"/>
+<path d="M352 284H376Q390 284 390 298V316Q390 330 376 330H320" fill="none" stroke="#111" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="196" y="400" width="120" height="20" rx="7" fill="#111"/>
+<path d="M422 70C424 88 431 95 449 97 431 99 424 106 422 124 420 106 413 99 395 97 413 95 420 88 422 70Z" fill="#f26b1f"/>
+<g transform="translate(88.5 200) scale(-1 1) rotate(-38) scale(0.82)"><path d="M-72 -38Q-92 -40 -98 -70L-110 -146Q-114 -168 -132 -164Q-142 -160 -144 -148" fill="none" stroke="#111" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><path d="M56 -102H84" stroke="#111" stroke-width="12" stroke-linecap="round"/><path d="M84 -114L98 -30" stroke="#f26b1f" stroke-width="18" stroke-linecap="round"/><path d="M-70 0Q-76 0 -75 -8L-58 -122Q-56 -130 -48 -130H48Q56 -130 58 -122L75 -8Q76 0 70 0Z" fill="#ffffff" stroke="#111" stroke-width="17" stroke-linejoin="round"/><path d="M-38 -100L-47 -28" stroke="#111" stroke-width="7" stroke-linecap="round" opacity="0.12"/><path d="M-44 -130Q0 -146 44 -130" fill="none" stroke="#111" stroke-width="12" stroke-linecap="round"/><rect x="-14" y="-162" width="28" height="22" rx="6" fill="#f26b1f"/></g>
+</svg>

@@ -36,7 +36,8 @@ Pro recipes from named Authors (Tetsu Kasuya, James Hoffmann, Lance Hedrick, and
 - **Works offline (confirmed):** client-only installable PWA with no backend and no accounts. Data lives in this browser's localStorage, with JSON backup export and import.
 - **Photos belong to Recipes (ADR 0003):** a Built-in recipe shows a photo of its Author; a Personal recipe can carry one uploaded photo stored inline; a recipe without a photo falls back to its Brewer's drawing.
 - **Vocabulary:** use the terms in `GLOSSARY.md` (Recipe, Built-in recipe, Personal recipe, Author, Brewer, Step, Pour, Grind setting, Session, Library).
-- **Undecided:** public hosting; PWA icons.
+- **Hosting (2026-10-15):** GitHub Pages at https://gem-bautista.github.io/brew-guide/, deployed on every push to `main`, so the iPad gets HTTPS and can install the app.
+- **App icon (2026-10-15):** a Fellow Stagg EKG, outlined in black with an orange knob and handle, pouring from the left into a centred V60 on a white ground with the orange glow. The source is `public/icon.svg`; the PNG icons beside it are rendered from it.
 
 ## Brand Commitments
 
