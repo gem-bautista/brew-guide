@@ -3,7 +3,9 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // GitHub Pages serves the site from /brew-guide/; dev stays at the root.
+  base: command === 'build' ? '/brew-guide/' : '/',
   plugins: [
     react(),
     tailwindcss(),
@@ -27,4 +29,4 @@ export default defineConfig({
     }),
   ],
   test: { environment: 'node', include: ['src/**/*.test.ts'] },
-})
+}))
