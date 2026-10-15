@@ -10,6 +10,7 @@ const act = (id: string, kind: 'swirl' | 'stir' | 'wait' | 'press' | 'drawdown',
   ({ id, kind, startSec, instruction })
 
 const PHILO = 'https://en.philocoffea.com/blogs/blog/coffee-brewing-method'
+const KASUYA_ICED = 'https://www.youtube.com/watch?v=TfSBzFeoL4s'
 const HARIO_JH = 'https://www.hario-europe.com/blogs/hario-community/v60-ambassadors-james-hoffmann'
 const HEDRICK_AP = 'https://www.youtube.com/watch?v=jz9fH5ODVFU'
 const WAC = 'https://worldaeropresschampionship.com/pages/recipes'
@@ -39,6 +40,29 @@ export const BUILT_IN_RECIPES: Recipe[] = [
       pour('p3', 90, 60, ''),
       pour('p4', 135, 60, ''),
       pour('p5', 165, 60, 'The last pour. Then let it drain.'),
+    ],
+  }),
+  build({
+    id: 'kasuya-46-iced',
+    photoAlt: 'Tetsu Kasuya sipping iced coffee from a glass cup',
+    name: '4:6 Iced Coffee',
+    author: 'Tetsu Kasuya',
+    family: '4:6 Method',
+    brewer: 'V60',
+    verification: 'verified',
+    source: { label: 'Tetsu Kasuya, flash-chilled iced coffee with the 4:6 Method (YouTube, in Japanese)', url: KASUYA_ICED },
+    doseG: 20, iceG: 80, tempC: 90, totalSec: 180,
+    grind: { scale: 'fine', zp6Clicks: 4.2, zp6Estimated: true, authorText: 'Fine. If it takes much longer than 3:00 to drain, go a little coarser.' },
+    timingNote: 'Kasuya brews at 90 °C or hotter to bring out the aroma and, with dark roasts, the bitterness. Drop to about 80 °C for less bitterness.',
+    notes: 'The 4:6 with half the water, brewed straight onto ice. Freezer ice is fine. For a sweeter cup make the first pour smaller and the second larger, keeping their total the same; for a brighter one, the reverse.',
+    steps: [
+      pour('p1', 0, 30, 'Wet all the grounds.', 'bloom'),
+      act('s1', 'swirl', 10, 'Swirl the dripper so every ground gets wet. A spoon stir works too.'),
+      pour('p2', 40, 30, ''),
+      act('s2', 'swirl', 50, 'Swirl once more.'),
+      pour('p3', 70, 30, 'The fine grind drains slowly. Keep to the times anyway.'),
+      pour('p4', 100, 30, ''),
+      pour('p5', 130, 30, 'The last pour. Once it has drained, lift off the dripper and swirl the server to melt the ice. It needn’t all melt.'),
     ],
   }),
   build({

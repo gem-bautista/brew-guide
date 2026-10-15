@@ -120,7 +120,23 @@ function Spoon({ tipY }: { tipY: number }) {
   )
 }
 
-function Server({ fill, drips, from, stream, clip }: { fill: number; drips: boolean; from: number; stream: boolean; clip: string }) {
+/** Ice cubes resting in the bottom of the Server, for an Iced recipe: x, y and tilt of each. */
+const CUBES = [[132, 416, -12], [170, 424, 8], [210, 418, -4], [246, 422, 14], [152, 388, 18], [194, 392, -10], [232, 386, 4]] as const
+
+function Ice() {
+  return (
+    <g>
+      {CUBES.map(([x, y, tilt], i) => (
+        <g key={i} transform={`rotate(${tilt} ${x + 16} ${y + 16})`}>
+          <rect x={x} y={y} width="32" height="32" rx="6" fill="var(--scene-ice)" stroke={LINE} strokeWidth="1.5" strokeOpacity="0.3" />
+          <path d={`M${x + 7} ${y + 9}h9`} stroke="var(--scene-shine)" strokeWidth="3" strokeLinecap="round" />
+        </g>
+      ))}
+    </g>
+  )
+}
+
+function Server({ fill, drips, from, stream, clip, iced }: { fill: number; drips: boolean; from: number; stream: boolean; clip: string; iced: boolean }) {
   const level = SERVER_BOTTOM - clamp(fill) * (SERVER_BOTTOM - SERVER_TOP)
   return (
     <g>
@@ -131,6 +147,7 @@ function Server({ fill, drips, from, stream, clip }: { fill: number; drips: bool
           <rect x="100" y="0" width="200" height="140" fill="var(--scene-coffee-deep)" />
           <rect x="100" y="0" width="200" height="5" fill="var(--scene-coffee-top)" />
         </g>
+        {iced && <Ice />}
         {stream && <rect x="197" y={from} width="6" height={Math.max(0, level - from)} rx="3" fill="var(--scene-coffee)" />}
         {drips && [0, 1].map((i) => (
           <circle key={i} className="scene-drip" cx="200" cy={from} r="3.5" fill="var(--scene-coffee)"
@@ -217,7 +234,7 @@ function AeroPress({ scene, ids }: { scene: SceneState; ids: { chamber: string; 
   )
 }
 
-export function BrewScene({ brewer, scene, className = '' }: { brewer: Brewer; scene: SceneState; className?: string }) {
+export function BrewScene({ brewer, iced = false, scene, className = '' }: { brewer: Brewer; iced?: boolean; scene: SceneState; className?: string }) {
   const id = useId().replace(/:/g, '')
   const ids = { inner: `${id}-inner`, chamber: `${id}-chamber`, server: `${id}-server`, coffee: `${id}-coffee` }
   const press = brewer === 'Aeropress'
@@ -238,7 +255,7 @@ export function BrewScene({ brewer, scene, className = '' }: { brewer: Brewer; s
           <stop offset="0.7" stopColor="var(--scene-coffee-deep)" />
         </linearGradient>
       </defs>
-      <Server fill={scene.inServer} clip={ids.server} from={324}
+      <Server fill={scene.inServer} clip={ids.server} from={324} iced={iced}
         drips={scene.draining && !press} stream={scene.pressing} />
       {press ? <AeroPress scene={scene} ids={ids} /> : <DripBrewer shape={shape} scene={scene} ids={ids} />}
       {scene.inBrewer > 0.02 && <Steam y={brewerTop - 6} />}

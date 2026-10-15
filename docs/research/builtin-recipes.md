@@ -62,6 +62,29 @@ Stronger/lighter 60% variants: lighter = one 180 g pour; stronger = two 90 g pou
 ### 1c. "Later/updated" version
 Philocoffea pages fetched (4:6 page, V60 beginner guide, book page) mention no updated 4:6. A 2026 "10 pour" Kasuya recipe is being circulated (20 g, 300 g, 95-96 C, 30 g x 10, super-coarse). Every source found is a fan channel (The Quiet Cup, Chemicoffea) or blog. Hedrick's channel describes it as "Tetsu Kasuya's 10 pour recipe" but gives no numbers. Not verified from Kasuya himself; do not ship.
 
+### 1d. Flash-chilled iced coffee with the 4:6 (his YouTube channel, in Japanese)
+
+Source: Tetsu Kasuya's own channel, "【レシピ】世界チャンピオンが解説「急冷式アイスコーヒー」の作り方｜4：6メソッド" (https://www.youtube.com/watch?v=TfSBzFeoL4s, recipe from about 2:58 to 9:50). Read on 2026-10-15 from the video's Japanese auto-captions and its frames. The on-screen titles confirm 90 °C and the fifth pour (to 150 g at 2:10). Everything else below is what he says on camera.
+
+- Ice: about 80 g in the server before brewing ("80 g分ぐらい"; he tops 70 g up to "a bit over 80"). Freezer ice is fine; bought ice is ideal. It does not need to melt fully.
+- Coffee 20 g ("1人分だけど贅沢に"). The coffee and ice go on the scale and he tares with them in place.
+- Water 90 °C. He prefers 90 °C or higher, even for dark roasts, for the aroma and the bitterness; some brew at about 80 °C to avoid bitterness, which he also does sometimes.
+- Water 150 g, half the hot 4:6's 300 g, as five pours of 30 g.
+- Grind: "fine" (細かい), so the water drains slowly. If it takes more than about 3:00 to drain, grind a little coarser.
+- Swirl (shake) the dripper after the first pour so all the grounds wet, or stir with a spoon. Swirling after the second pour is fine too.
+- Finish: it drains at about 3:00 (his ran 2:57). Then swirl the server to melt the ice. The result is about 180 to 200 g of iced coffee.
+- Taste: like the hot 4:6, make the first two pours 20 + 40 for a sweeter cup, or 40 + 20 for a brighter one, keeping their total at 60. Those variants are not shipped (ADR 0001 ships them as separate recipes).
+
+| Start | Type | Water (g) | Scale target | Note |
+|---|---|---|---|---|
+| 0:00 | bloom | 30 | 30 | swirl to wet everything |
+| 0:40 | pour | 30 | 60 | may swirl again |
+| 1:10 | pour | 30 | 90 | |
+| 1:40 | pour | 30 | 120 | |
+| 2:10 | pour | 30 | 150 | drains by about 3:00 |
+
+Verified: yes, from the author's own channel. Caveat: the captions are auto-generated, so the numbers were read through them and checked against the frames where possible. ZP6 ESTIMATE: 4.2 (3.9-4.5), in the lower half of the 1Zpresso pour-over band, because he calls it fine and noticeably finer than the hot 4:6 (5.2). Confidence: low. Dial in by the 3:00 drain.
+
 ZP6 ESTIMATE for 4:6: 5.2 (range 4.8-5.6). Reasoning: "medium-coarse to coarse" is at the top of 1Zpresso's pour-over band (4.0-5.0) and just into French press (5.0-6.0). Confidence: low-medium.
 Confidence in recipe: high for 1a (single author page with byline and date).
 

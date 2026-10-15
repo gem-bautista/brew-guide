@@ -53,6 +53,13 @@ describe('draftToRecipe', () => {
     expect(draftToRecipe(d, 0).ok).toBe(false)
     expect(draftToRecipe({ ...filled(), total: '1:00' }, 0).ok).toBe(false)
   })
+  it('keeps ice only when it is a whole number of grams', () => {
+    const r = draftToRecipe({ ...filled(), ice: '80' }, 0)
+    expect(r.ok && r.recipe.iceG).toBe(80)
+    expect(draftToRecipe({ ...filled(), ice: '' }, 0).ok && 'ok').toBe('ok')
+    const bad = draftToRecipe({ ...filled(), ice: '12.5' }, 0)
+    expect(!bad.ok && bad.errors).toContain('Ice must be a whole number of grams above 0, or empty.')
+  })
   it('only marks ZP6 clicks as estimated when a value is given', () => {
     const r = draftToRecipe({ ...filled(), zp6: '', zp6Estimated: true }, 0)
     expect(r.ok && r.recipe.grind.zp6Estimated).toBe(false)

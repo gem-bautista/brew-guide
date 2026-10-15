@@ -49,6 +49,7 @@ function RecipeCard({ recipe, starred, onToggleFavorite }: {
         <span className="mt-0.5 block text-[13px] text-ink-soft tab:text-[15px]">{recipe.author}</span>
         <span className="font-figure mt-1.5 flex items-center gap-2 text-[13px] tab:text-[15px]">
           {recipe.doseG} g<Rule className="h-3.5" />{formatClock(recipe.totalSec)}
+          {recipe.iceG !== undefined && <><Rule className="h-3.5" />over ice</>}
         </span>
       </a>
       <button

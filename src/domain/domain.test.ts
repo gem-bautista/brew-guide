@@ -57,6 +57,11 @@ describe('scaleRecipe', () => {
     expect(totalWater(s)).toBe(135)
     expect(s.steps.map((x) => x.startSec)).toEqual(recipe.steps.map((x) => x.startSec))
   })
+  it('scales the ice with the dose, and adds none to a recipe without it', () => {
+    expect(scaleRecipe({ ...recipe, iceG: 80 }, 15).iceG).toBe(60)
+    expect(scaleRecipe({ ...recipe, iceG: 80 }, 13).iceG).toBe(52)
+    expect('iceG' in scaleRecipe(recipe, 15)).toBe(false)
+  })
   it('refuses non-scalable recipes and bad doses', () => {
     expect(() => scaleRecipe({ ...recipe, scalable: false }, 15)).toThrow()
     expect(() => scaleRecipe(recipe, 0)).toThrow()

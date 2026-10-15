@@ -5,6 +5,7 @@ import { cumulativeWater, totalWater } from '../domain/cumulative'
 // Totals taken from each author's published or supplied recipe.
 const EXPECTED_WATER: Record<string, number> = {
   'kasuya-46-balanced': 300,
+  'kasuya-46-iced': 150,
   'hoffmann-ultimate-v60': 500,
   'hoffmann-better-1-cup-v60': 250,
   'hedrick-1-2-1-v60': 306,
@@ -24,6 +25,7 @@ describe('built-in recipes', () => {
   it('hit the published scale readings', () => {
     const cum = (id: string) => cumulativeWater(BUILT_IN_RECIPES.find((r) => r.id === id)!.steps)
     expect(cum('kasuya-46-balanced')).toEqual([60, 120, 180, 240, 300])
+    expect(cum('kasuya-46-iced')).toEqual([30, 30, 60, 60, 90, 120, 150])
     expect(cum('hoffmann-better-1-cup-v60')).toEqual([50, 50, 100, 150, 200, 250, 250])
   })
   it('label every ZP6 value as an estimate', () => {

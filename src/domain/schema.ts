@@ -38,6 +38,8 @@ export const RecipeSchema = z
     photo: z.string().regex(/^(photos\/recipes\/[a-z0-9-]+\.jpg|data:image\/jpeg;base64,[A-Za-z0-9+/=]+)$/).optional(),
     photoAlt: z.string().optional(),
     doseG: z.number().positive(),
+    /** Grams of ice put in the Server before brewing, for an Iced recipe. It scales with the dose but is never poured. */
+    iceG: z.number().int().positive().optional(),
     tempC: z.number().min(60).max(100),
     grind: z.object({
       scale: z.enum(GRIND_SCALE),

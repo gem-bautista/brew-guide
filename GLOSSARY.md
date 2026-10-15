@@ -44,6 +44,10 @@ _Avoid_: Device, dripper, equipment
 The vessel under the Brewer that the brewed coffee collects in, whether a glass server, a carafe or a mug.
 _Avoid_: Carafe, decanter, jug, cup
 
+**Ice**:
+The ice put in the Server before an iced Recipe starts, so the coffee brews straight onto it. The scale is tared with the ice in place, so Scale targets count only water. Ice scales with the dose but is never a Pour.
+_Avoid_: Bypass, chill water
+
 **Step**:
 One ordered instruction in a Recipe, with a kind and a start time measured from the beginning of the brew.
 _Avoid_: Stage, phase, instruction

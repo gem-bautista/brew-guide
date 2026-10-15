@@ -177,6 +177,9 @@ export function Editor({ initial, title, cancelHref, onSave }: {
           <Field label="Total brew time" hint="Like 3:30">
             <input className={figure} value={d.total} onChange={(e) => set({ total: e.target.value })} />
           </Field>
+          <Field label="Ice in the server" optional hint="For iced coffee. Leave empty for hot.">
+            <Unit unit="g"><input className={`${figure} pr-9`} inputMode="numeric" value={d.ice} onChange={(e) => set({ ice: e.target.value })} /></Unit>
+          </Field>
         </div>
       </div>
 

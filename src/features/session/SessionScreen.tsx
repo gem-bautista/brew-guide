@@ -193,6 +193,11 @@ function Preview({ recipe, backHref, extra, favorite, onStart, resumable, onResu
           {/* The route, scaled with the dose, in the same rows the brew will follow. */}
           <section aria-labelledby="route" className="mt-6 tab:mt-8">
             <h2 id="route" className="text-[13px] font-bold uppercase tracking-[0.12em] text-ink-soft">Steps</h2>
+            {scaled.iceG !== undefined && (
+              <p className="mt-2 rounded-xl bg-accent-tint px-3 py-2.5 text-[15px] tab:px-4 tab:text-base">
+                <span className="font-semibold">Before you start:</span> put <span className="font-figure">{scaled.iceG} g</span> of ice in the server, then tare the scale with it there.
+              </p>
+            )}
             <StepList recipe={scaled} className="-mx-3 mt-1.5 tab:-mx-4" />
           </section>
 
@@ -202,7 +207,7 @@ function Preview({ recipe, backHref, extra, favorite, onStart, resumable, onResu
               <Rule className="h-[30px] tab:h-10" />
               <span className="leading-none">
                 <span className="font-display block text-[38px] font-light tracking-[-0.03em] tab:text-[52px]"><Digits text={`${dose}`} /> g</span>
-                <span className="font-figure mt-1 block text-xs text-ink-soft tab:text-sm">{water} g water · 1:{+ratio(scaled).toFixed(1)}</span>
+                <span className="font-figure mt-1 block text-xs text-ink-soft tab:text-sm">{water} g water · {scaled.iceG !== undefined ? `${scaled.iceG} g ice` : `1:${+ratio(scaled).toFixed(1)}`}</span>
               </span>
             </div>
             <div className="flex gap-2 tab:gap-3">
@@ -242,7 +247,7 @@ function Brewing({ recipe, elapsed, countIn, paused, position, backHref, onPause
   const scene = sceneAt(recipe, elapsed, reducedMotion ? 0 : POUR_SEC)
   // The Scale target: what the current Pour should bring the scale to, or what the last one reached.
   const target = cumulative[index] ?? 0
-  const tagline = counting ? 'Get ready' : paused ? 'Paused' : `Step ${index + 1} of ${recipe.steps.length}`
+  const tagline = counting ? (recipe.iceG !== undefined ? 'Ice in the server?' : 'Get ready') : paused ? 'Paused' : `Step ${index + 1} of ${recipe.steps.length}`
 
   return (
     <div className="mx-auto flex h-svh w-full max-w-xl flex-col overflow-hidden px-5 pb-5 pt-[18px] tab:max-w-3xl tab:px-10 tab:pb-8 tab:pt-6 land:max-w-6xl">
@@ -262,7 +267,7 @@ function Brewing({ recipe, elapsed, countIn, paused, position, backHref, onPause
         <section aria-label="Brew" className="flex min-h-0 shrink-0 flex-col items-center land:h-full land:justify-center">
           <div className="relative h-[33svh] tab:h-[38svh] land:h-auto land:min-h-0 land:w-full land:flex-1 land:max-h-[62svh]">
             <div aria-hidden className="glow absolute left-1/2 top-[55%] aspect-square h-[90%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
-            <BrewScene brewer={recipe.brewer} scene={scene} className="relative h-full w-full" />
+            <BrewScene brewer={recipe.brewer} iced={recipe.iceG !== undefined} scene={scene} className="relative h-full w-full" />
             {counting && (
               <div className="absolute inset-0 grid place-items-center" aria-live="assertive">
                 <span key={Math.ceil(countIn)} className="animate-count-in font-display grid size-[clamp(96px,16svh,160px)] place-items-center rounded-full bg-bg/90 text-[clamp(64px,11svh,110px)] font-light leading-none shadow-[0_12px_40px_rgb(150_60_10/0.25)]">
@@ -356,7 +361,8 @@ function Finished({ recipe, backHref, onAgain }: { recipe: Recipe; backHref?: st
         </ul>
 
         <p className="mt-3.5 flex items-center justify-center gap-3 text-sm text-ink-soft tab:mt-6 tab:text-base land:col-start-2 land:row-start-3 land:justify-start">
-          Ratio<Rule className="h-[22px] tab:h-8" /><span className="font-figure text-2xl font-light text-ink tab:text-[32px]">1:{+ratio(recipe).toFixed(1)}</span>
+          {recipe.iceG !== undefined ? 'Over ice' : 'Ratio'}<Rule className="h-[22px] tab:h-8" />
+          <span className="font-figure text-2xl font-light text-ink tab:text-[32px]">{recipe.iceG !== undefined ? `${recipe.iceG} g` : `1:${+ratio(recipe).toFixed(1)}`}</span>
         </p>
 
         <div className="mt-auto flex gap-2.5 pt-6 tab:mt-12 tab:gap-3 tab:pt-0 land:col-start-2 land:row-start-4 land:mt-10">

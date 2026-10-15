@@ -19,6 +19,8 @@ export interface RecipeDraft {
   name: string
   brewer: Brewer
   dose: string
+  /** Grams of ice in the Server, or '' for a hot recipe. */
+  ice: string
   temp: string
   grindScale: Scale
   zp6: string
@@ -46,7 +48,7 @@ export const newStepDraft = (kind: Kind = 'pour'): StepDraft => ({
 export function templateDraft(): RecipeDraft {
   const step = (kind: Kind, start: string, water: string, instruction: string): StepDraft => ({ key: uid(), kind, start, water, instruction })
   return {
-    id: uid(), name: '', brewer: 'V60', dose: '15', temp: '94', grindScale: 'medium-fine', zp6: '', zp6Estimated: false,
+    id: uid(), name: '', brewer: 'V60', dose: '15', ice: '', temp: '94', grindScale: 'medium-fine', zp6: '', zp6Estimated: false,
     authorText: '', microns: '', scalable: true, timingNote: '', notes: '',
     steps: [
       step('bloom', '0:00', '45', 'Wet all the grounds.'),
@@ -62,7 +64,7 @@ export function templateDraft(): RecipeDraft {
 
 export function recipeToDraft(r: Recipe): RecipeDraft {
   return {
-    id: r.id, name: r.name, brewer: r.brewer, dose: String(r.doseG), temp: String(r.tempC),
+    id: r.id, name: r.name, brewer: r.brewer, dose: String(r.doseG), ice: r.iceG?.toString() ?? '', temp: String(r.tempC),
     grindScale: r.grind.scale, zp6: r.grind.zp6Clicks?.toString() ?? '', zp6Estimated: r.grind.zp6Estimated,
     authorText: r.grind.authorText ?? '', microns: r.grind.microns?.toString() ?? '',
     scalable: r.scalable, timingNote: r.timingNote ?? '', notes: r.notes ?? '',
@@ -100,6 +102,8 @@ export function draftToRecipe(d: RecipeDraft, nowMs: number): DraftResult {
   if (!d.name.trim()) errors.push('Give the recipe a name.')
   const dose = toNum(d.dose)
   if (dose === undefined || !(dose > 0)) errors.push('Coffee dose must be a number above 0.')
+  const ice = toNum(d.ice)
+  if (ice !== undefined && !(Number.isInteger(ice) && ice > 0)) errors.push('Ice must be a whole number of grams above 0, or empty.')
   const temp = toNum(d.temp)
   if (temp === undefined || !(temp >= 60 && temp <= 100)) errors.push('Water temperature must be between 60 and 100 °C.')
   const zp6 = toNum(d.zp6)
@@ -135,6 +139,7 @@ export function draftToRecipe(d: RecipeDraft, nowMs: number): DraftResult {
     brewer: d.brewer,
     photo: d.photo || undefined,
     doseG: dose,
+    iceG: ice,
     tempC: temp,
     grind: {
       scale: d.grindScale,

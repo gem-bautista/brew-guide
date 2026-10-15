@@ -13,6 +13,7 @@ Every built-in recipe credits its Author and links to its source. Each carries a
 | Recipe | Author | Brewer | Numbers |
 | --- | --- | --- | --- |
 | [4:6 Method](https://en.philocoffea.com/blogs/blog/coffee-brewing-method) | Tetsu Kasuya | V60 | Verified |
+| [4:6 Iced Coffee](https://www.youtube.com/watch?v=TfSBzFeoL4s) | Tetsu Kasuya | V60, over ice | Verified |
 | [Ultimate V60 Technique](https://www.hario-europe.com/blogs/hario-community/v60-ambassadors-james-hoffmann) | James Hoffmann | V60 | Partly checked |
 | A Better 1 Cup V60 Technique | James Hoffmann | V60 | User-supplied |
 | 1-2-1 V60 | Lance Hedrick | V60 | User-supplied |
