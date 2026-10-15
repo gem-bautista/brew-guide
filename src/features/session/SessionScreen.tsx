@@ -70,13 +70,16 @@ function BackLink({ href, children }: { href?: string; children: React.ReactNode
   )
 }
 
-/** Longer names step down a size, so the hairline title never needs more than two lines. */
+/**
+ * Longer names step down a size, so the hairline title never needs more than
+ * two lines. On a phone the title shares its row with the photo, so it starts smaller.
+ */
 function titleSize(name: string) {
   return name.length <= 12
-    ? 'text-[clamp(44px,15vw,66px)] tab:text-[84px]'
+    ? 'text-[clamp(34px,10vw,44px)] tab:text-[84px]'
     : name.length <= 22
-      ? 'text-[clamp(36px,11vw,48px)] tab:text-[64px]'
-      : 'text-[clamp(30px,9vw,38px)] tab:text-[52px] land:text-[46px]'
+      ? 'text-[clamp(28px,8vw,36px)] tab:text-[64px]'
+      : 'text-[clamp(24px,6.6vw,30px)] tab:text-[52px] land:text-[46px]'
 }
 
 function Pill({ icon, value, label }: { icon: string; value: string; label: string }) {
@@ -139,25 +142,30 @@ function Preview({ recipe, backHref, extra, favorite, onStart, resumable, onResu
       {/* One column on a phone or an upright iPad. Sideways, the photo takes the
           left column and the title and details share the right one. */}
       <div className="flex flex-1 flex-col land:grid land:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] land:grid-rows-[auto_auto] land:content-center land:gap-x-16 land:py-4">
-        <div className="mt-2 text-center tab:mt-4 land:col-start-2 land:row-start-1 land:mt-0 land:self-end land:text-left">
+        {/* On a phone the photo shrinks to a small arch beside the title, so the
+            Steps show without scrolling. From an upright iPad up this wrapper
+            steps aside and the title and photo lay out as before. */}
+        <div className="mt-3 flex flex-row-reverse items-center gap-4 tab:contents">
+        <div className="min-w-0 flex-1 tab:mt-4 tab:flex-none tab:text-center land:col-start-2 land:row-start-1 land:mt-0 land:self-end land:text-left">
           <p className="text-[19px] font-bold text-accent-text tab:text-[22px]">{recipe.author} · {recipe.brewer}</p>
           <h1 className={`font-display mt-1 leading-[1.05] [text-wrap:balance] ${titleSize(recipe.name)}`}>{recipe.name}</h1>
         </div>
 
         {/* The photo sits clear of the title: a two-line name used to run under it. */}
-        <div className="relative mx-auto mt-6 aspect-[236/292] w-[236px] tab:mt-8 tab:w-[260px] land:col-start-1 land:row-span-2 land:row-start-1 land:mt-0 land:h-[min(70svh,560px)] land:w-auto land:self-center">
+        <div className="relative aspect-[236/292] w-[92px] shrink-0 tab:mx-auto tab:mt-8 tab:w-[260px] land:col-start-1 land:row-span-2 land:row-start-1 land:mt-0 land:h-[min(70svh,560px)] land:w-auto land:self-center">
           <div aria-hidden className="glow absolute left-1/2 top-[52%] aspect-square w-[170%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
-          <Sparkle size={20} className="absolute -left-[26%] top-[4%] text-ink" />
-          <Sparkle size={12} className="absolute -left-[14%] top-[16%] text-accent" />
+          <Sparkle size={20} className="absolute -left-[26%] top-[4%] hidden text-ink tab:block" />
+          <Sparkle size={12} className="absolute -left-[14%] top-[16%] hidden text-accent tab:block" />
           <RecipePhoto
             recipe={recipe}
             markSize={72}
-            className="relative size-full rounded-b-[18px] rounded-t-[50%_40.4%] shadow-[0_24px_50px_rgb(150_60_10/0.22)]"
+            className="relative size-full rounded-b-[10px] rounded-t-[50%_40.4%] shadow-[0_12px_28px_rgb(150_60_10/0.22)] tab:rounded-b-[18px] tab:shadow-[0_24px_50px_rgb(150_60_10/0.22)]"
           />
+        </div>
         </div>
 
         <div className="flex flex-1 flex-col land:col-start-2 land:row-start-2 land:flex-none">
-          <ul className="mt-7 grid grid-cols-3 gap-2 tab:mt-8 tab:gap-3 land:mt-5">
+          <ul className="mt-5 grid grid-cols-3 gap-2 tab:mt-8 tab:gap-3 land:mt-5">
             <Pill icon={ICON.temp} value={`${recipe.tempC} °C`} label="water" />
             <Pill icon={ICON.grind} value={grind.value} label={grind.label} />
             <Pill icon={ICON.time} value={formatClock(recipe.totalSec)} label="total" />
@@ -174,7 +182,7 @@ function Preview({ recipe, backHref, extra, favorite, onStart, resumable, onResu
           )}
 
           {(recipe.grind.authorText || recipe.timingNote || recipe.notes) && (
-            <div className="mt-4 max-w-[62ch] space-y-2 text-[15px] leading-relaxed text-ink-soft [text-wrap:pretty] tab:mt-5 tab:text-base">
+            <div className="order-1 mt-5 max-w-[62ch] space-y-2 text-[15px] leading-relaxed text-ink-soft [text-wrap:pretty] tab:order-none tab:mt-5 tab:text-base">
               {recipe.notes && <p>{recipe.notes}</p>}
               {recipe.timingNote && <p>{recipe.timingNote}</p>}
               {recipe.grind.authorText && <p><span className="font-semibold text-ink">Author&rsquo;s grind:</span> {recipe.grind.authorText}</p>}
@@ -182,7 +190,7 @@ function Preview({ recipe, backHref, extra, favorite, onStart, resumable, onResu
           )}
 
           {recipe.source && (
-            <p className="mt-3 text-sm text-ink-soft tab:text-[15px]">
+            <p className="order-1 mt-3 text-sm text-ink-soft tab:order-none tab:text-[15px]">
               {VERIFICATION[recipe.verification ?? 'verified']}{' '}
               {recipe.source.url ? (
                 <a className="underline underline-offset-4" href={recipe.source.url} target="_blank" rel="noreferrer">{recipe.source.label}</a>
@@ -191,7 +199,7 @@ function Preview({ recipe, backHref, extra, favorite, onStart, resumable, onResu
           )}
 
           {/* The route, scaled with the dose, in the same rows the brew will follow. */}
-          <section aria-labelledby="route" className="mt-6 tab:mt-8">
+          <section aria-labelledby="route" className="mt-5 tab:mt-8">
             <h2 id="route" className="text-[13px] font-bold uppercase tracking-[0.12em] text-ink-soft">Steps</h2>
             {scaled.iceG !== undefined && (
               <p className="mt-2 rounded-xl bg-accent-tint px-3 py-2.5 text-[15px] tab:px-4 tab:text-base">
@@ -217,10 +225,13 @@ function Preview({ recipe, backHref, extra, favorite, onStart, resumable, onResu
           </div>
           {!recipe.scalable && <p className="mt-2 text-sm text-ink-soft">This recipe is fixed, so the dose can&rsquo;t be changed.</p>}
 
-          <button className={`${primaryClass} mt-[18px] w-full flex-none text-[17px] tab:mt-5`} onClick={() => onStart(scaled)}>
-            Start brew <Arrow />
-          </button>
-          {extra && <div className="mt-3 flex gap-3">{extra}</div>}
+          {/* Pinned to the bottom of a phone screen, so Start is always in reach. */}
+          <div className="sticky bottom-0 order-2 -mx-5 mt-4 bg-bg px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 tab:static tab:order-none tab:mx-0 tab:mt-5 tab:bg-transparent tab:p-0">
+            <button className={`${primaryClass} w-full text-[17px]`} onClick={() => onStart(scaled)}>
+              Start brew <Arrow />
+            </button>
+          </div>
+          {extra && <div className="order-3 mt-3 flex gap-3 tab:order-none">{extra}</div>}
         </div>
       </div>
     </div>

@@ -225,8 +225,8 @@ function AeroPress({ scene, ids }: { scene: SceneState; ids: { chamber: string; 
         transform: `translateY(${scene.pressing ? surface - 104 : -260}px)`,
         opacity: scene.pressing ? 1 : 0,
       }}>
-        <rect x="162" y="-150" width="76" height="246" fill="var(--scene-glass)" stroke={LINE} strokeWidth="3" />
-        <rect x="148" y="-162" width="104" height="16" rx="6" fill={LINE} />
+        <rect x="162" y="-96" width="76" height="192" fill="var(--scene-glass)" stroke={LINE} strokeWidth="3" />
+        <rect x="148" y="-108" width="104" height="16" rx="6" fill={LINE} />
         <rect x="156" y="92" width="88" height="12" rx="3" fill="var(--scene-cap)" />
       </g>
       {scene.stirring && <Spoon tipY={Math.max(surface, 150) + 12} />}
@@ -245,7 +245,8 @@ export function BrewScene({ brewer, iced = false, scene, className = '' }: { bre
   const brewerTop = press ? 84 : 112
 
   return (
-    <svg viewBox="0 0 400 500" aria-hidden className={className}>
+    // An AeroPress gets headroom above its chamber, where the plunger starts a press.
+    <svg viewBox={press ? '0 -116 400 616' : '0 0 400 500'} aria-hidden className={className}>
       <defs>
         <clipPath id={ids.inner}><path d={shape.inner} /></clipPath>
         <clipPath id={ids.chamber}><rect x="155" y="98" width="90" height="196" /></clipPath>
@@ -258,7 +259,7 @@ export function BrewScene({ brewer, iced = false, scene, className = '' }: { bre
       <Server fill={scene.inServer} clip={ids.server} from={324} iced={iced}
         drips={scene.draining && !press} stream={scene.pressing} />
       {press ? <AeroPress scene={scene} ids={ids} /> : <DripBrewer shape={shape} scene={scene} ids={ids} />}
-      {scene.inBrewer > 0.02 && <Steam y={brewerTop - 6} />}
+      {scene.inBrewer > 0.02 && !scene.pressing && <Steam y={brewerTop - 6} />}
       <Kettle pouring={scene.pouring} surface={surface} />
     </svg>
   )
