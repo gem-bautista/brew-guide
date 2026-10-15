@@ -151,8 +151,10 @@ function Preview({ recipe, backHref, extra, favorite, onStart, resumable, onResu
           <h1 className={`font-display mt-1 leading-[1.05] [text-wrap:balance] ${titleSize(recipe.name)}`}>{recipe.name}</h1>
         </div>
 
-        {/* The photo sits clear of the title: a two-line name used to run under it. */}
-        <div className="relative aspect-[236/292] w-[92px] shrink-0 tab:mx-auto tab:mt-8 tab:w-[260px] land:col-start-1 land:row-span-2 land:row-start-1 land:mt-0 land:h-[min(70svh,560px)] land:w-auto land:self-center">
+        {/* The photo sits clear of the title: a two-line name used to run under it.
+            Sideways it starts level with the title and stays in view while the
+            Steps scroll; centred against the whole column it sat half off screen. */}
+        <div className="relative aspect-[236/292] w-[92px] shrink-0 tab:mx-auto tab:mt-8 tab:w-[260px] land:col-start-1 land:row-span-2 land:row-start-1 land:mt-0 land:sticky land:top-6 land:h-[min(70svh,560px)] land:w-auto land:self-start">
           <div aria-hidden className="glow absolute left-1/2 top-[52%] aspect-square w-[170%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
           <Sparkle size={20} className="absolute -left-[26%] top-[4%] hidden text-ink tab:block" />
           <Sparkle size={12} className="absolute -left-[14%] top-[16%] hidden text-accent tab:block" />
