@@ -5,6 +5,7 @@ import {
   startSession, type Session,
 } from '../../domain/session'
 import { clearActiveSession, loadActiveSession, saveActiveSession } from '../../storage/activeSession'
+import { setBrewing } from '../../appUpdate'
 
 function beep(ctx: AudioContext | null) {
   if (!ctx) return
@@ -76,6 +77,13 @@ export function useBrewSession() {
     navigator.wakeLock.request('screen').then((l) => (lock = l)).catch(() => {})
     return () => void lock?.release().catch(() => {})
   }, [running])
+
+  // Hold back an app update while this brew is on screen, Brew done included.
+  const onScreen = session !== null
+  useEffect(() => {
+    setBrewing(onScreen)
+    return () => setBrewing(false)
+  }, [onScreen])
 
   // Persist so a reload or sleeping phone can resume.
   useEffect(() => {

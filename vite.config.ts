@@ -3,14 +3,18 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-export default defineConfig(({ command }) => ({
-  // GitHub Pages serves the site from /brew-guide/; dev stays at the root.
-  base: command === 'build' ? '/brew-guide/' : '/',
+export default defineConfig(({ command, isPreview }) => ({
+  // GitHub Pages serves the site from /brew-guide/, and `vite preview` mirrors
+  // it there; dev stays at the root.
+  base: command === 'build' || isPreview ? '/brew-guide/' : '/',
   plugins: [
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // src/appUpdate.ts decides when a new version takes over, so it never
+      // reloads the page in the middle of a brew.
+      registerType: 'prompt',
+      injectRegister: false,
       workbox: {
         // The default glob misses fonts and photos, which would leave an
         // offline brew with fallback type and empty cards. Only the latin
